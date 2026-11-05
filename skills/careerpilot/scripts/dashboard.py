@@ -1,4 +1,4 @@
-"""Local, read-only dashboard for the canonical skill workspace (stdlib only)."""
+"""Local dashboard with public-feed discovery; no application submission API."""
 import argparse
 import hashlib
 import json
@@ -8,6 +8,7 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, quote, urlsplit
+from job_search import SearchManager, rankings
 
 ASSETS = Path(__file__).resolve().parents[1] / 'assets' / 'dashboard'
 STATIC = {'': ('index.html', 'text/html'), 'app.js': ('app.js', 'text/javascript'),
@@ -36,6 +37,7 @@ class DashboardServer(ThreadingHTTPServer):
         self.root = Path(root).expanduser().resolve()
         read_state(self.root)
         self.token = secrets.token_urlsafe(32)
+        self.search = SearchManager(self.root)
         super().__init__(('127.0.0.1', port), DashboardHandler)
         self.origin = f'http://127.0.0.1:{self.server_port}'
         self.url = f'{self.origin}/{self.token}/'
@@ -81,7 +83,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 return self.respond(404, 'Not found')
             state = read_state(server.root)
             if route == 'api/state':
-                return self.respond(200, json.dumps({'state': state, 'workspace': str(server.root)}, ensure_ascii=False), 'application/json; charset=utf-8')
+                return self.respond(200, json.dumps({'state': state, 'workspace': str(server.root),
+                    'rankings': rankings(state), 'active_search': server.search.active}, ensure_ascii=False), 'application/json; charset=utf-8')
             if route == 'api/export':
                 return self.respond(200, json.dumps(state, indent=2, ensure_ascii=False), 'application/json; charset=utf-8', 'job-workspace.json')
             query = parse_qs(parsed.query)
@@ -103,17 +106,43 @@ class DashboardHandler(BaseHTTPRequestHandler):
             return self.respond(503, 'Workspace unavailable. Check the workspace and refresh; no changes were made.')
 
     def do_POST(self):
-        self.respond(405, 'This dashboard is read-only. Ask your AI agent to make changes.')
+        server = self.server
+        if self.path != f'/{server.token}/api/search':
+            return self.respond(405, 'Only job discovery can be started from this dashboard.')
+        if (self.headers.get('Host') != urlsplit(server.origin).netloc
+                or self.headers.get('Origin') != server.origin
+                or self.headers.get('X-CareerPilot-Request') != 'search'
+                or self.headers.get('Sec-Fetch-Site') == 'cross-site'):
+            return self.respond(403, 'Search must be started from this dashboard.')
+        if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
+            return self.respond(415, 'Send a JSON search request.')
+        try:
+            size = int(self.headers.get('Content-Length', '0'))
+            if not 0 < size <= 4096:
+                return self.respond(413, 'Search request is too large or empty.')
+            self.connection.settimeout(10)
+            query = json.loads(self.rfile.read(size))
+            result = server.search.start(query)
+            return self.respond(202, json.dumps(result), 'application/json; charset=utf-8')
+        except ValueError as exc:
+            return self.respond(400, str(exc))
+        except RuntimeError as exc:
+            return self.respond(409, str(exc))
+        except (OSError, sqlite3.Error):
+            return self.respond(503, 'Could not save the search. Check the workspace and try again.')
 
-    do_PUT = do_POST
-    do_DELETE = do_POST
-    do_PATCH = do_POST
+    def unsupported(self):
+        self.respond(405, 'This action is not available from the dashboard.')
+
+    do_PUT = unsupported
+    do_DELETE = unsupported
+    do_PATCH = unsupported
 
 
 def serve(root, port=8765, open_browser=False):
     server = DashboardServer(root, port)
     print(json.dumps({'dashboard': server.url, 'workspace': str(server.root),
-                      'mode': 'read-only', 'stop': 'Ctrl+C in this terminal'}), flush=True)
+                      'mode': 'search-and-review', 'stop': 'Ctrl+C in this terminal'}), flush=True)
     try:
         if open_browser:
             webbrowser.open(server.url)

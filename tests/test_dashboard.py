@@ -2,6 +2,7 @@ import hashlib
 import http.client
 import json
 import sqlite3
+import sys
 import tempfile
 import threading
 import unittest
@@ -9,6 +10,7 @@ from pathlib import Path
 
 from test_skill import ROOT, load, toolkit
 
+sys.path.insert(0, str(ROOT / 'skills' / 'careerpilot' / 'scripts'))
 dashboard = load('dashboard', ROOT / 'skills' / 'careerpilot' / 'scripts' / 'dashboard.py')
 
 
@@ -30,10 +32,10 @@ class DashboardTests(unittest.TestCase):
         self.thread.join()
         self.temp.cleanup()
 
-    def get(self, route, method='GET', headers=None, prefix=True):
+    def get(self, route, method='GET', headers=None, prefix=True, body=None):
         connection = http.client.HTTPConnection('127.0.0.1', self.server.server_port, timeout=5)
         try:
-            connection.request(method, (self.prefix if prefix else '') + route, headers=headers or {})
+            connection.request(method, (self.prefix if prefix else '') + route, body=body, headers=headers or {})
             response = connection.getresponse()
             return response.status, dict(response.getheaders()), response.read()
         finally:
@@ -100,6 +102,29 @@ class DashboardTests(unittest.TestCase):
         with self.assertRaises(sqlite3.OperationalError):
             dashboard.DashboardServer(Path(self.temp.name)/'missing',0)
         self.assertFalse((Path(self.temp.name)/'missing').exists())
+
+    def test_search_post_requires_same_origin_and_starts_real_workflow(self):
+        from test_search import FakeClient
+        self.server.search.client=FakeClient()
+        payload=json.dumps({'role':'Data Analyst','location':'New York','posted_within':'7'})
+        headers={'Content-Type':'application/json','X-CareerPilot-Request':'search','Origin':self.server.origin}
+        self.assertEqual(self.get('api/search','POST',body=payload)[0],403)
+        self.assertEqual(self.get('api/search','POST',headers=dict(headers,Origin='https://external.example'),body=payload)[0],403)
+        status,_,raw=self.get('api/search','POST',headers=headers,body=payload)
+        self.assertEqual(status,202)
+        sid=json.loads(raw)['search_id']
+        self.server.search.thread.join(timeout=5)
+        state=json.loads(self.get('api/state')[2])
+        self.assertEqual(len(state['state']['searches'][sid]['job_ids']),2)
+        self.assertEqual(len(state['rankings']),2)
+        self.assertIsNone(state['active_search'])
+
+    def test_search_post_validates_body_and_has_no_submit_api(self):
+        headers={'Content-Type':'application/json','X-CareerPilot-Request':'search','Origin':self.server.origin}
+        self.assertEqual(self.get('api/search','POST',headers=headers,body='{}')[0],400)
+        self.assertEqual(self.get('api/search','POST',headers=headers,body='x'*4097)[0],413)
+        self.assertEqual(self.get('api/submit','POST',headers=headers,body='{}')[0],405)
+        self.assertEqual(self.ws.read()['jobs'],{})
 
 
 if __name__ == '__main__':

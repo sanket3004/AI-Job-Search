@@ -28,3 +28,11 @@ The dashboard is a read-only local viewer, not a browser driver or background AI
 ## Release 0.4.1 CareerPilot validation
 
 November 5, 2026: all 31 existing tests passed after renaming the skill folder, host installer destinations, packaging and test imports to `careerpilot`. Skill frontmatter validation and JavaScript syntax checks passed. The package contains 18 files under `careerpilot/`. Workspace paths, database filename/schema, saved records and submission controls are unchanged; no candidate data was imported or migrated.
+
+## Release 0.5.0 search validation
+
+November 5, 2026: 44 tests passed, including all existing workflows plus public-feed normalization, date formats and exact window boundaries, unknown-date inclusion, preservation of low-scoring results, immutable per-search snapshots, deduplication without changing application state, pagination, partial-source failure, cache reuse, concurrent-request rejection, constrained source endpoints, same-origin search POST handling and rejected application mutations. Automated tests use synthetic sources only. JavaScript syntax validation passed.
+
+An isolated live browser check searched `Data Analyst / Remote` through the dashboard. A seven-day run saved 128 postings, including 79 low-relevance results. A subsequent 24-hour run saved 65 postings using the same cached feeds. Both independently dated lists remained available in Search history. The UI correctly reported partial coverage at the five-page caps for Jobicy and Arbeitnow; Remotive returned ten feed rows, with no role candidates for this query. Posting dates, source fetch times, low-score filtering, newest-first sorting, score explanations, and historical-list reopening were verified in the browser. These counts describe this validation run, not expected future search volume or exhaustive coverage.
+
+The dark desktop interface was visually inspected. No console errors/warnings were reported in the inspected browser view. The live check imported no personal profile and submitted no employer application or outreach. Test data and screenshots remain in ignored local work files.

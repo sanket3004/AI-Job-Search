@@ -2,6 +2,8 @@
 
 Use the user's target role, location/work arrangement, experience level and deal-breakers. Preserve the source URL, source name, retrieved date, complete available description, and external job identifier when present.
 
+The [dashboard](dashboard.md) provides a built-in public-feed search with role/location fields, posting-date filters, saved timestamped result lists, and all relevance scores including low matches. Its word/location relevance score is separate from the AI fit assessment below. Review imported search results and source coverage before selecting jobs; do not overwrite saved historical search snapshots when adding an AI evaluation. Preserve source posting dates and distinguish missing dates from retrieval dates.
+
 Prefer official employer career pages, supported job-feed APIs, and authorized connectors. LinkedIn and Indeed are supported as posting sources when retrieval is allowed; accept user-pasted descriptions and links as a fallback. Do not promise complete coverage, an official API you have not verified, or unrestricted scraping. Check current source access terms when implementing or activating a connector. An available third-party scraper is not evidence of platform permission.
 
 Relevant platform references:

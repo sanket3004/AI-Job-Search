@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-VERSION = '0.4.1'
+VERSION = '0.5.0'
 TERMINAL = {'Submitted', 'Interview', 'Rejected', 'Offer', 'Withdrawn', 'Expired'}
 ACTIVE = {'Selected', 'Preparing', 'Filling', 'Ready for review'}
 
@@ -116,6 +116,38 @@ class Workspace:
 
     def apply(self, state, data):
         op = text(data.get('op'), 'op')
+        if op == 'search-start':
+            role, location = text(data.get('role'), 'role'), text(data.get('location'), 'location')
+            require(len(role) <= 120 and len(location) <= 120, 'Search fields exceed 120 characters')
+            window = data.get('posted_within', 'any')
+            require(isinstance(window, str) and window in {'any', '1', '7', '30'}, 'Invalid posting-date window')
+            require(type(data.get('include_unknown_dates', False)) is bool, 'Unknown-date option must be boolean')
+            sid = uuid.uuid4().hex[:12]
+            state.setdefault('searches', {})[sid] = {'id': sid, 'role': role, 'location': location,
+                'posted_within': data.get('posted_within', 'any'), 'include_unknown_dates': data.get('include_unknown_dates', False),
+                'status': 'running', 'created_at': utc(), 'updated_at': utc(), 'job_ids': [], 'listings': {}, 'coverage': []}
+            return {'search_id': sid}
+        if op in {'search-results', 'search-finish'}:
+            run = state.get('searches', {}).get(data.get('search_id'))
+            require(run is not None and run['status'] == 'running', 'Unknown or finished search')
+            if op == 'search-results':
+                require(isinstance(data.get('jobs'), list) and isinstance(data.get('coverage'), dict), 'Invalid search results')
+                for candidate in data['jobs']:
+                    result = self.apply(state, dict(candidate, op='job-add'))
+                    jid = result['job_id']
+                    if jid not in run['job_ids']:
+                        run['job_ids'].append(jid)
+                    run['listings'][jid] = dict(candidate, id=jid)
+                    # A new discovery must not overwrite reviewed text, documents, or application state.
+                    if not result['duplicate']:
+                        state['jobs'][jid]['discovery'] = candidate.get('discovery', {})
+                run['coverage'].append(data['coverage'])
+            else:
+                require(data.get('status') in {'complete', 'partial', 'failed'}, 'Invalid search status')
+                run['status'] = data['status']
+                run['error'] = data.get('error', '')
+            run['updated_at'] = utc()
+            return {'search_id': run['id'], 'status': run['status'], 'count': len(run['job_ids'])}
         if op == 'profile-preview':
             profile = data.get('profile')
             require(isinstance(profile, dict) and bool(profile), 'Proposed profile must be a nonempty object')

@@ -14,16 +14,29 @@
     <nav aria-label="Main navigation">
       <button data-view="overview" class="active">Overview <span>01</span></button>
       <button data-view="jobs">Job pipeline <span>02</span></button>
+      <button data-view="history">Search history <span>↗</span></button>
       <button data-view="profile">My profile <span>03</span></button>
       <button data-view="documents">Documents <span>04</span></button>
       <button data-view="contacts">Contacts & drafts <span>05</span></button>
       <button data-view="activity">Activity <span>06</span></button>
     </nav>
-    <div class="sidebar-note"><span class="live-dot"></span> Local workspace<p>Your AI does the work.<br>Follow the progress here.</p><small>Viewing only · No applications are sent from this dashboard.</small></div>
+    <div class="sidebar-note"><span class="live-dot"></span> Local workspace<p>Discover. Compare.<br>Make your next move.</p><small>Search here. Review applications with your AI.</small></div>
   </aside>
   <main>
     <header class="topbar"><span id="breadcrumb">Workspace / Overview</span><div class="top-actions"><span id="sync" role="status">Connecting…</span><button id="refresh" class="quiet">Refresh</button><a class="quiet" href="api/export" download>Export data ↓</a></div></header>
     <div id="error" role="alert" hidden></div>
+    <section class="search-hub" aria-labelledby="search-title">
+      <div class="search-heading"><div><div class="eyebrow">DISCOVER YOUR NEXT OPPORTUNITY</div><h1 id="search-title">A new role. A new chapter.</h1><p>Search public job feeds. Compare every match, from strongest to lowest.</p></div><span class="hub-mark" aria-hidden="true">↗</span></div>
+      <form id="job-search-form">
+        <div class="search-field"><label for="role-input">Job role</label><input id="role-input" name="role" placeholder="e.g. Data Analyst" required maxlength="120" autocomplete="off"></div>
+        <div class="search-field"><label for="location-input">Location</label><input id="location-input" name="location" placeholder="City, country, or Remote" required maxlength="120" autocomplete="off"></div>
+        <div class="search-field"><label for="posted-input">Posted within</label><select id="posted-input" name="posted_within"><option value="any">Any time</option><option value="1">Last 24 hours</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option></select></div>
+        <button id="start-search" class="primary" type="submit">Search jobs <span aria-hidden="true">↗</span></button>
+      </form>
+      <div class="search-options"><label><input id="unknown-dates" type="checkbox"> Include unknown posting dates with a date filter</label><span>Low-scoring matches stay in your results.</span></div>
+      <div id="search-feedback" role="status" aria-live="polite"></div>
+      <details class="source-info"><summary>Searching Remotive, Jobicy & Arbeitnow · View coverage</summary><p>Remotive and Jobicy cover remote roles. Arbeitnow focuses on Europe, primarily Germany. Location matching is textual; check remote eligibility before applying. This is a limited set of public feeds, not every job board. LinkedIn and Indeed are not searched here.</p><p>Remotive’s public feed is delayed by 24 hours and cached for 6 hours. Jobicy’s feed covers the last 7 days. Jobicy and Arbeitnow are cached for 1 hour; each refresh reads up to 5 pages. Every saved list records source fetch times and any coverage limits. Unknown posting dates are never replaced by the fetch date.</p></details>
+    </section>
     <div id="content" aria-live="off"><div class="empty">Loading your workspace…</div></div>
     <footer><span id="workspace"></span><span>Updates every 5 seconds while this tab is open</span></footer>
   </main>

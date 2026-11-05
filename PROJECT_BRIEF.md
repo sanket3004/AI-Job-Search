@@ -44,6 +44,12 @@ Adds an optional dashboard inside the portable skill, using the canonical SQLite
 
 Renames the product and installable skill to CareerPilot (`careerpilot`), including the dashboard, report, invocation prompts, host installation destinations and ZIP. Existing workspace locations, database format and application state are preserved. The archived prototype remains historical reference material.
 
+## Release 0.5.0 — search, dates and saved lists
+
+Adds a dark charcoal dashboard and a working role/location search form using public Remotive, Jobicy and Arbeitnow feeds. Every role candidate inside the selected posting-date window is retained, including low relevance and location mismatches. Results display ordinal ranks, an explained 0–100 search relevance score, source links and posting dates. This deterministic search score stays separate from AI fit assessments.
+
+Date windows support any time, 24 hours, 7 days and 30 days, with explicit handling of unknown dates. Each run stores its own timestamped listing snapshot and source fetch times; cached feed reuse is visible. Daily searches can produce new historical lists without replacing prior searches. No daily scheduling or application submission is introduced. A five-page collection limit and source errors are reported as partial coverage. Existing application records and approved documents are preserved on rediscovery.
+
 ## Runtime boundaries
 
 Skill installation does not install browser tools or grant account access. Local models require a tool-enabled host. Site access restrictions still apply. Personal profiles, browser credentials and generated application documents stay outside the distributed package and source repository.

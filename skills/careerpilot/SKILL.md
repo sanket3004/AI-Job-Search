@@ -2,7 +2,7 @@
 name: careerpilot
 description: Manage a candidate's job search from a fresh profile through job discovery, fit ranking, tailored resumes, recruiting-contact research, browser-assisted applications, and outcome tracking. Use when the user wants to find or apply for jobs, prepare application materials, or resume an application queue.
 metadata:
-  version: "0.4.1"
+  version: "0.5.0"
 ---
 
 # CareerPilot
@@ -28,7 +28,7 @@ For a new candidate, offer **Import resume / LinkedIn profile or export / Indeed
 | Fill, apply, resume queue | [Browser applications](references/browser-applications.md) | Filled forms, paused exceptions, review or confirmed submission |
 | Find hiring team or draft outreach | [Recruiting contacts](references/contacts.md) | Sourced contact cards and unsent drafts |
 | Track results, prepare interview | [Tracking and interviews](references/tracking.md) | Updated history, follow-ups and interview prep |
-| Open dashboard, view pipeline visually | [Local dashboard](references/dashboard.md) | Live local overview of the same saved workspace |
+| Open dashboard, view pipeline visually | [Local dashboard](references/dashboard.md) | Direct public-feed search and a visual overview of the same saved workspace |
 
 Read only the relevant references. Follow the user's chosen subset; finding jobs does not automatically authorize applying or contacting anyone.
 
@@ -36,7 +36,7 @@ Read only the relevant references. Follow the user's chosen subset; finding jobs
 
 On a broad request, offer a short numbered menu: **Set up profile / Find jobs / Prepare applications / Resume queue / Review progress**. Do the requested work directly when intent is clear. Present jobs in a compact table with company, role, fit explanation, state, and next action. The user should not need to know shell commands.
 
-Offer the [local dashboard](references/dashboard.md) for a visual overview with search, filters, profile, documents, contacts, and activity. It reads the same workspace and refreshes as the agent saves progress. Its action prompts are copied into the agent chat; they do not start background agents. Use `report` for a portable static HTML snapshot. Neither view is a live application-browser session. Keep user data and generated reports out of source control.
+Offer the [local dashboard](references/dashboard.md) for direct role/location searches, posting-date filters, all ranked results including low matches, saved timestamped lists, profile, documents, contacts, and activity. It reads the same workspace and refreshes as the agent saves progress. Its Search jobs form runs public-feed discovery locally. Other AI action prompts are copied into the agent chat; they do not start background agents. Distinguish automatic search relevance from an AI fit assessment, and report source limits, missing dates, and cached fetch times. Use `report` for a portable static HTML snapshot. Neither view is a live application-browser session. Keep user data and generated reports out of source control.
 
 ## Application boundaries
 

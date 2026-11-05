@@ -1,6 +1,6 @@
 # State helper contract
 
-Use the absolute path to the installed `scripts/toolkit.py` and to the user's workspace. State commands return JSON and exit nonzero on failure; they do not contact job sites or control application forms. The optional dashboard command serves a local read-only view and can open it in the default browser. Python 3.10+ is required. The private SQLite file is `toolkit.sqlite3`; no candidate data ships in the skill.
+Use the absolute path to the installed `scripts/toolkit.py` and to the user's workspace. State commands return JSON and exit nonzero on failure; they do not contact job sites or control application forms. The optional dashboard command serves a local search-and-review interface and can open it in the default browser. Search jobs fetches supported public feeds and records results through the state helper. Python 3.10+ is required. The private SQLite file is `toolkit.sqlite3`; no candidate data ships in the skill.
 
 ```text
 python "SKILL_DIR/scripts/toolkit.py" --workspace "WORKSPACE" init
@@ -20,6 +20,9 @@ Each request has `op`, plus the fields below. Job operations require the returne
 
 | op | Fields |
 |---|---|
+| `search-start` | `role`, `location`, `posted_within`: any/1/7/30, `include_unknown_dates`: boolean; creates a dated search run |
+| `search-results` | `search_id`, normalized `jobs`, `coverage`; adds deduplicated jobs and immutable per-run listing snapshots without changing existing applications |
+| `search-finish` | `search_id`, `status`: complete/partial/failed; optional `error` |
 | `profile-save` | `profile`: complete object; replaces prior profile, increments revision |
 | `profile-preview` | complete merged `profile`, current `base_revision`, absolute `evidence_files` from this workspace's imports folder; saves before/after changes without applying |
 | `profile-apply` | `preview_id`, actual `user_confirmation`; applies the reviewed profile only if its revision and source hashes still match |
@@ -67,6 +70,6 @@ Do not use example observations as real evidence. `checkpoint` overwrites the pr
 
 The HTML report is a private read-only snapshot, with escaped content and no scripts. Its document links reference the workspace artifacts. Rebuild after changes. It cannot restore a browser session or perform submission.
 
-The optional `dashboard` command runs a loopback-only read-only server until stopped. It uses the same database without modifying it. See [dashboard](dashboard.md) for launch options and views; it does not drive the application browser or execute AI requests.
+The optional `dashboard` command runs a loopback-only server until stopped. Reads do not modify state; its authenticated same-origin search endpoint records public-feed search runs and new jobs using the helper. See [dashboard](dashboard.md) for launch options and views; it does not drive the application browser or execute AI requests.
 
 Profile imports are described in [profile import](profile-import.md). `show` includes saved `profile_imports` previews and their sources. They are private records, not extra skill instructions. Include the imports directory in a full workspace backup to preserve source evidence. `profile-preview` records the proposal but never changes the candidate profile or existing ready applications; `profile-apply` changes the profile and invalidates ready reviews. Confirmation must come from the user; a text field alone is not an authorization boundary.
