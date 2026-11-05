@@ -1,8 +1,12 @@
-# AI Job Toolkit
+# CareerPilot
 
-An installable **Agent Skill** for a personal job search: fresh profile, job discovery, fit assessments, tailored documents, recruiting contacts, browser applications and tracking. Version 0.4.0.
+Your AI companion from job discovery to application.
 
-The AI agent you already use supplies the reasoning and tools. The canonical package is **`skills/ai-job-toolkit/`**. It includes `SKILL.md`, focused workflow references, a standard-library Python state helper and Codex display metadata. It has no model API dependency and includes no personal profile.
+An installable **Agent Skill** for a personal job search: fresh profile, job discovery, fit assessments, tailored documents, recruiting contacts, browser applications and tracking. Version 0.4.1.
+
+The AI agent you already use supplies the reasoning and tools. The canonical package is **`skills/careerpilot/`**. It includes `SKILL.md`, focused workflow references, a standard-library Python state helper and Codex display metadata. It has no model API dependency and includes no personal profile.
+
+CareerPilot was previously named AI Job Toolkit. The skill command is now `careerpilot`; existing `job-search-workspace` folders and their `toolkit.sqlite3` database remain compatible. Open the same workspace to continue an existing search. The project folder and GitHub repository URL can retain their existing names.
 
 ## Install and use
 
@@ -15,8 +19,8 @@ python tools/install_skill.py --host claude --project "D:\path\to\your\workspace
 
 For all local projects, use `--user` instead of `--project ...`. Use `--dry-run` to print the destination without writing. The installer is idempotent for identical files and refuses to overwrite a different existing skill. The full folder can also be copied into another agent's documented skill location.
 
-- Codex: invoke **`$ai-job-toolkit`**.
-- Claude Code: invoke **`/ai-job-toolkit`**.
+- Codex: invoke **`$careerpilot`**.
+- Claude Code: invoke **`/careerpilot`**.
 - Local models: load the skill in a compatible agent runtime with file, Python and browser tools. A bare model endpoint does not supply those capabilities.
 
 Examples:
@@ -51,7 +55,7 @@ Choose **Import resume**, **LinkedIn profile/export**, **Indeed profile/export**
 
 Account exports are local file imports, not account connections. Direct account reads require an already available permitted connector/browser and your authorization; there is no built-in LinkedIn/Indeed OAuth integration. LinkedIn archives default to professional-profile CSVs and skip messages/connections. Other archives require selecting the relevant files after inspection.
 
-The core helper and DOCX/text/CSV/JSON imports use Python's standard library. PDF extraction optionally requires `pypdf` (`python -m pip install -r skills/ai-job-toolkit/scripts/requirements-pdf.txt`) or an existing host PDF tool. Scanned PDFs need OCR/visual review through the host; the importer does not include OCR. No extraction sends files to a service.
+The core helper and DOCX/text/CSV/JSON imports use Python's standard library. PDF extraction optionally requires `pypdf` (`python -m pip install -r skills/careerpilot/scripts/requirements-pdf.txt`) or an existing host PDF tool. Scanned PDFs need OCR/visual review through the host; the importer does not include OCR. No extraction sends files to a service.
 
 ## User experience
 
@@ -76,7 +80,7 @@ Candidate data goes in an explicit private workspace, outside the installed skil
 ## Repository layout
 
 ```text
-skills/ai-job-toolkit/    Canonical installable skill
+skills/careerpilot/    Canonical installable skill
 tools/                   Installer and ZIP builder
 tests/                   State/packaging tests and local browser fixture
 legacy/dashboard/        Archived standalone prototype; separate data model
@@ -91,7 +95,7 @@ python -m unittest discover -s tests -v
 python tools/package_skill.py
 ```
 
-The ZIP is written to `dist/ai-job-toolkit.zip`, containing only the canonical skill folder. It excludes runtime data, caches and the archived dashboard. A ZIP does not guarantee support by every chat interface; use that host's documented skill installation flow.
+The ZIP is written to `dist/careerpilot.zip`, containing only the canonical skill folder. It excludes runtime data, caches and the archived dashboard. A ZIP does not guarantee support by every chat interface; use that host's documented skill installation flow.
 
 Workspace backups should include `imports/` to preserve evidence behind reviewed profile changes, along with the database and application artifacts.
 

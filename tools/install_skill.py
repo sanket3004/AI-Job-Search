@@ -5,7 +5,7 @@ import json
 import shutil
 from pathlib import Path
 
-SOURCE = Path(__file__).resolve().parents[1] / 'skills' / 'ai-job-toolkit'
+SOURCE = Path(__file__).resolve().parents[1] / 'skills' / 'careerpilot'
 
 def files(root):
     return sorted(p for p in root.rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.suffix != '.pyc')
@@ -40,7 +40,7 @@ def main():
     if args.destination and args.host:
         parser.error('--destination cannot be combined with --host')
     root = Path.home() if args.user else args.project
-    destination = args.destination or root / ('.agents' if args.host == 'codex' else '.claude') / 'skills' / 'ai-job-toolkit'
+    destination = args.destination or root / ('.agents' if args.host == 'codex' else '.claude') / 'skills' / 'careerpilot'
     try:
         print(json.dumps(install(destination, args.dry_run), indent=2))
         return 0

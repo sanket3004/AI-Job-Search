@@ -1,0 +1,4 @@
+interface:
+  display_name: "CareerPilot"
+  short_description: "Find jobs, tailor documents, and prepare applications"
+  default_prompt: "Use $careerpilot to help me find suitable jobs and prepare applications for my review."

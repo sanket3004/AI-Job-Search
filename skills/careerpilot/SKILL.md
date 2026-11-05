@@ -1,11 +1,11 @@
 ---
-name: ai-job-toolkit
+name: careerpilot
 description: Manage a candidate's job search from a fresh profile through job discovery, fit ranking, tailored resumes, recruiting-contact research, browser-assisted applications, and outcome tracking. Use when the user wants to find or apply for jobs, prepare application materials, or resume an application queue.
 metadata:
-  version: "0.4.0"
+  version: "0.4.1"
 ---
 
-# AI Job Toolkit
+# CareerPilot
 
 Act as the user's job-search assistant through the host's existing tools. This skill supplies workflows and a local state helper; it does not install browser tools, log in to services, or connect a model API. The current agent provides reasoning. Read [host capabilities](references/hosts.md) only when capability or installation questions arise.
 

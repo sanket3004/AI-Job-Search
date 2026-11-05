@@ -1,6 +1,6 @@
-# Maintaining AI Job Toolkit
+# Maintaining CareerPilot
 
-The product is the installable skill at `skills/ai-job-toolkit`. Keep host-independent instructions there. `agents/openai.yaml` is optional Codex UI metadata. Do not convert the core into a standalone model client or make the legacy dashboard a dependency.
+The product is the installable skill at `skills/careerpilot`. Keep host-independent instructions there. `agents/openai.yaml` is optional Codex UI metadata. Do not convert the core into a standalone model client or make the legacy dashboard a dependency.
 
 Personal state belongs in an explicit private workspace, never in the skill or Git. Do not import the author's prior profile. Preserve valid user authorization without expanding its scope. Submission intent, browser execution and observed confirmation are separate events.
 

@@ -24,3 +24,7 @@ November 5, 2026: 31 Python tests passed (24 existing tests plus 7 dashboard tes
 Browser verification used only an isolated synthetic workspace and an empty workspace: overview counts, search combined with a status filter, paused-job details and checkpoint answers, copyable chat requests, profile details, documents, contacts/drafts, activity, automatic refresh after a saved note, and fresh-profile onboarding. No browser errors or warnings were reported on the final inspected page. The desktop layout was visually inspected; a screenshot is retained in ignored local work files. No real employer, account, profile, outreach message, or application was accessed or submitted.
 
 The dashboard is a read-only local viewer, not a browser driver or background AI runner. Hosted access and mobile-device browser behavior were not validated. The server has no write API; agent actions still use the existing state helper and host permissions.
+
+## Release 0.4.1 CareerPilot validation
+
+November 5, 2026: all 31 existing tests passed after renaming the skill folder, host installer destinations, packaging and test imports to `careerpilot`. Skill frontmatter validation and JavaScript syntax checks passed. The package contains 18 files under `careerpilot/`. Workspace paths, database filename/schema, saved records and submission controls are unchanged; no candidate data was imported or migrated.

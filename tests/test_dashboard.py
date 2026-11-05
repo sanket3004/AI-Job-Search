@@ -9,7 +9,7 @@ from pathlib import Path
 
 from test_skill import ROOT, load, toolkit
 
-dashboard = load('dashboard', ROOT / 'skills' / 'ai-job-toolkit' / 'scripts' / 'dashboard.py')
+dashboard = load('dashboard', ROOT / 'skills' / 'careerpilot' / 'scripts' / 'dashboard.py')
 
 
 class DashboardTests(unittest.TestCase):

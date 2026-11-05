@@ -16,5 +16,9 @@ __pycache__/
 work/
 dist/
 job-search-workspace/
+.agents/skills/careerpilot/
+.claude/skills/careerpilot/
+
+# Previous installation names remain private during migration.
 .agents/skills/ai-job-toolkit/
 .claude/skills/ai-job-toolkit/

@@ -14,7 +14,7 @@ def load(name, path):
     spec.loader.exec_module(module)
     return module
 
-toolkit = load('toolkit', ROOT / 'skills' / 'ai-job-toolkit' / 'scripts' / 'toolkit.py')
+toolkit = load('toolkit', ROOT / 'skills' / 'careerpilot' / 'scripts' / 'toolkit.py')
 installer = load('installer', ROOT / 'tools' / 'install_skill.py')
 packager = load('packager', ROOT / 'tools' / 'package_skill.py')
 
@@ -167,7 +167,7 @@ class SkillTests(unittest.TestCase):
         self.assertIn('&lt;script&gt;', report)
 
     def test_install_and_archive_have_only_portable_skill_files(self):
-        destination = self.root / 'installed' / 'ai-job-toolkit'
+        destination = self.root / 'installed' / 'careerpilot'
         installer.install(destination)
         self.assertTrue((destination / 'SKILL.md').is_file())
         self.assertTrue(installer.install(destination)['unchanged'])
@@ -177,8 +177,8 @@ class SkillTests(unittest.TestCase):
         archive = self.root / 'skill.zip'
         packager.package(archive)
         with zipfile.ZipFile(archive) as z:
-            self.assertIn('ai-job-toolkit/SKILL.md', z.namelist())
-            self.assertTrue(all(n.startswith('ai-job-toolkit/') for n in z.namelist()))
+            self.assertIn('careerpilot/SKILL.md', z.namelist())
+            self.assertTrue(all(n.startswith('careerpilot/') for n in z.namelist()))
             self.assertFalse(any('__pycache__' in n or n.endswith(('.sqlite3','.pyc')) for n in z.namelist()))
 
 if __name__ == '__main__':

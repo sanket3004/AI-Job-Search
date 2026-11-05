@@ -14,7 +14,7 @@ function pill(status) { const color = ['Ready for review','Offer','Interview'].i
 function panel(title, subtitle) { const p = el('section','panel'); add(p, add(el('div','panel-head'), el('h2','',title), subtitle ? el('small','',subtitle) : null)); return p; }
 function heading(title, subtitle, action) { return add(el('div','page-heading'), add(el('div'), el('div','eyebrow','YOUR JOB SEARCH'), el('h1','',title), el('p','',subtitle)), action); }
 function empty(title, hint, action) { return add(el('div','empty'), el('strong','',title), el('p','',hint), action); }
-function request(text) { $('prompt-text').value = `Use ai-job-toolkit with workspace "${workspace}". ${text}`; $('copy-status').textContent = ''; $('copy-prompt').textContent = 'Copy request'; $('prompt-dialog').showModal(); }
+function request(text) { $('prompt-text').value = `Use careerpilot with workspace "${workspace}". ${text}`; $('copy-status').textContent = ''; $('copy-prompt').textContent = 'Copy request'; $('prompt-dialog').showModal(); }
 function ask(text, prompt, cls='primary') { return button(text, () => request(prompt), cls); }
 function go(next, status) { view = next; if(status !== undefined) filter = status; document.querySelectorAll('[data-view]').forEach(n => { n.classList.toggle('active', n.dataset.view === view); if(n.dataset.view === view) n.setAttribute('aria-current','page'); else n.removeAttribute('aria-current'); }); $('breadcrumb').textContent = `Workspace / ${titles[view]}`; render(); }
 function valueNode(value) {

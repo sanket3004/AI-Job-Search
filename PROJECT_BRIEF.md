@@ -1,4 +1,4 @@
-# AI Job Toolkit — skill package
+# CareerPilot — skill package
 
 ## Product direction
 
@@ -39,6 +39,10 @@ Direct LinkedIn/Indeed account reading remains dependent on the host's available
 ## Release 0.4.0 — local dashboard
 
 Adds an optional dashboard inside the portable skill, using the canonical SQLite workspace in read-only mode. It includes overview counts, search/filter/sort for jobs, application details and blockers, profile/import reviews, document downloads, contacts/drafts and activity. The browser refreshes saved state every five seconds. Copyable requests connect the visual review back to the user's agent chat; the dashboard itself does not run the agent or mutate state. A Windows launcher opens the default workspace, with an optional custom workspace argument. The static HTML report remains available.
+
+## Release 0.4.1 — CareerPilot
+
+Renames the product and installable skill to CareerPilot (`careerpilot`), including the dashboard, report, invocation prompts, host installation destinations and ZIP. Existing workspace locations, database format and application state are preserved. The archived prototype remains historical reference material.
 
 ## Runtime boundaries
 

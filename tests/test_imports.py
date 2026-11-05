@@ -8,7 +8,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS = ROOT / 'skills' / 'ai-job-toolkit' / 'scripts'
+SCRIPTS = ROOT / 'skills' / 'careerpilot' / 'scripts'
 sys.path.insert(0, str(SCRIPTS))
 from import_profile import collect, extract, inventory, save_evidence
 from toolkit import Workspace

@@ -1,4 +1,0 @@
-interface:
-  display_name: "AI Job Toolkit"
-  short_description: "Find jobs, tailor documents, and prepare applications"
-  default_prompt: "Use $ai-job-toolkit to help me find suitable jobs and prepare applications for my review."

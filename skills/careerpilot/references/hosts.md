@@ -22,9 +22,9 @@ python tools/install_skill.py --host codex --project "ABSOLUTE_PROJECT_PATH"
 python tools/install_skill.py --host claude --project "ABSOLUTE_PROJECT_PATH"
 ```
 
-Codex project destination: `.agents/skills/ai-job-toolkit`. Claude Code project destination: `.claude/skills/ai-job-toolkit`. For user scope, replace `--project ...` with `--user`. The installer refuses to overwrite a different existing skill. Use `--destination` for another compatible agent's documented skill directory. A full installation source should be reviewed before enabling it.
+Codex project destination: `.agents/skills/careerpilot`. Claude Code project destination: `.claude/skills/careerpilot`. For user scope, replace `--project ...` with `--user`. The installer refuses to overwrite a different existing skill. Use `--destination` for another compatible agent's documented skill directory. A full installation source should be reviewed before enabling it.
 
-Invoke `$ai-job-toolkit` in Codex or `/ai-job-toolkit` in Claude Code. A host that supports the Agent Skills format can load the folder using its own documented installation flow. If it doesn't, explicitly load `SKILL.md` and its needed references in a tool-enabled session; this is manual loading, not automatic discovery. Do not claim all ChatGPT interfaces can install or run local skills.
+Invoke `$careerpilot` in Codex or `/careerpilot` in Claude Code. A host that supports the Agent Skills format can load the folder using its own documented installation flow. If it doesn't, explicitly load `SKILL.md` and its needed references in a tool-enabled session; this is manual loading, not automatic discovery. Do not claim all ChatGPT interfaces can install or run local skills.
 
 Official installation references checked during development:
 - https://learn.chatgpt.com/docs/build-skills
