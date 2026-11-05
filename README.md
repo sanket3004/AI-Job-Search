@@ -1,6 +1,6 @@
 # AI Job Toolkit
 
-An installable **Agent Skill** for a personal job search: fresh profile, job discovery, fit assessments, tailored documents, recruiting contacts, browser applications and tracking. Version 0.3.0.
+An installable **Agent Skill** for a personal job search: fresh profile, job discovery, fit assessments, tailored documents, recruiting contacts, browser applications and tracking. Version 0.4.0.
 
 The AI agent you already use supplies the reasoning and tools. The canonical package is **`skills/ai-job-toolkit/`**. It includes `SKILL.md`, focused workflow references, a standard-library Python state helper and Codex display metadata. It has no model API dependency and includes no personal profile.
 
@@ -40,6 +40,7 @@ Examples:
 - Document copies with hashes; review snapshots tied to the profile, answers and exact files.
 - Per-job pause/resume, explicit queue selection, submission authorization records, and uncertain-result recovery.
 - A private HTML review report and JSON state export.
+- A live local dashboard showing the same workspace: overview, searchable job pipeline, profile/import reviews, documents, contacts/drafts, and activity.
 - Installation, ZIP packaging, automated behavior tests and a local browser-form simulation.
 
 The host AI performs web research, document authoring and browser actions through tools it already has. The Python helper **does not scrape sites, drive a browser, send messages or submit applications**. Installing the skill does not add those tools or grant permissions. Browser workflows work only where the host tools and site access permit them; universal form support and unattended applications on LinkedIn/Indeed are not claimed. Live employer applications have not been submitted in release validation.
@@ -54,6 +55,20 @@ The core helper and DOCX/text/CSV/JSON imports use Python's standard library. PD
 
 ## User experience
 
+### Open your dashboard
+
+On Windows, double-click **`Open Dashboard.cmd`** in this repository. It opens the default `job-search-workspace` in your browser and creates an empty workspace if needed. Keep the terminal running; Ctrl+C stops the dashboard. To use another saved workspace, pass its path as the launcher's first argument or ask your AI to open that workspace's dashboard.
+
+From any installed copy of the skill:
+
+```powershell
+python "SKILL_DIR/scripts/toolkit.py" --workspace "WORKSPACE" dashboard --open
+```
+
+Initialize a new workspace with `init` first. The dashboard refreshes every five seconds while visible, uses a per-session local URL, and binds only to this computer. Use `--port 0` if the default port 8765 is occupied. No extra packages, hosting, or model API are required.
+
+The dashboard displays saved data and provides copyable requests for your AI chat. It does not run an AI agent, import files, edit state, grant permissions, or submit applications. Documents download only if they still match their registered content. Export data downloads state JSON; include workspace artifacts and imports separately for a full backup.
+
 Ask in ordinary language. The skill offers a short task menu when useful and returns job tables, clear next actions and a read-only HTML report. All browser filling ends at review by default. Specific submission approval or a scoped automatic batch can be recorded when authorized, subject to the host's permission requirements. Contact outreach has separate authorization.
 
 Candidate data goes in an explicit private workspace, outside the installed skill. The helper initializes a workspace ignore file; avoid placing data in source control. Workspace files are not encrypted by this package. Browser sessions and credentials remain managed by the host. A database backup must include the artifacts directory to preserve document bytes.
@@ -67,7 +82,7 @@ tests/                   State/packaging tests and local browser fixture
 legacy/dashboard/        Archived standalone prototype; separate data model
 ```
 
-The old dashboard is retained for reference and is not synchronized with the skill workspace. Use the skill's generated report for the current application's saved state.
+The archived dashboard is retained for reference and is not synchronized with the skill workspace. Use the new skill dashboard or generated report for current saved state.
 
 ## Validate and package
 

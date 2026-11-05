@@ -1,6 +1,6 @@
 # State helper contract
 
-Use the absolute path to the installed `scripts/toolkit.py` and to the user's workspace. Commands return JSON, exit nonzero on failure, and never send network requests or control a browser. Python 3.10+ is required. The private SQLite file is `toolkit.sqlite3`; no candidate data ships in the skill.
+Use the absolute path to the installed `scripts/toolkit.py` and to the user's workspace. State commands return JSON and exit nonzero on failure; they do not contact job sites or control application forms. The optional dashboard command serves a local read-only view and can open it in the default browser. Python 3.10+ is required. The private SQLite file is `toolkit.sqlite3`; no candidate data ships in the skill.
 
 ```text
 python "SKILL_DIR/scripts/toolkit.py" --workspace "WORKSPACE" init
@@ -10,6 +10,7 @@ python "SKILL_DIR/scripts/toolkit.py" --workspace "WORKSPACE" show --job JOB_ID
 python "SKILL_DIR/scripts/toolkit.py" --workspace "WORKSPACE" next
 python "SKILL_DIR/scripts/toolkit.py" --workspace "WORKSPACE" run --input "WORKSPACE/request.json"
 python "SKILL_DIR/scripts/toolkit.py" --workspace "WORKSPACE" report
+python "SKILL_DIR/scripts/toolkit.py" --workspace "WORKSPACE" dashboard --open
 python "SKILL_DIR/scripts/toolkit.py" --workspace "WORKSPACE" export
 ```
 
@@ -65,5 +66,7 @@ Do not use example observations as real evidence. `checkpoint` overwrites the pr
 `next` returns the first Selected/Preparing job plus IDs left Filling/Submitting/Submission uncertain. Review in-flight IDs after an interruption. A Filling job can receive a new checkpoint or be paused. Submitting/uncertain jobs must be reconciled, never retried automatically. Paused jobs stay excluded until `resume`. The helper is serial per workspace transaction; do not run multiple browser workers against the same job.
 
 The HTML report is a private read-only snapshot, with escaped content and no scripts. Its document links reference the workspace artifacts. Rebuild after changes. It cannot restore a browser session or perform submission.
+
+The optional `dashboard` command runs a loopback-only read-only server until stopped. It uses the same database without modifying it. See [dashboard](dashboard.md) for launch options and views; it does not drive the application browser or execute AI requests.
 
 Profile imports are described in [profile import](profile-import.md). `show` includes saved `profile_imports` previews and their sources. They are private records, not extra skill instructions. Include the imports directory in a full workspace backup to preserve source evidence. `profile-preview` records the proposal but never changes the candidate profile or existing ready applications; `profile-apply` changes the profile and invalidates ready reviews. Confirmation must come from the user; a text field alone is not an authorization boundary.

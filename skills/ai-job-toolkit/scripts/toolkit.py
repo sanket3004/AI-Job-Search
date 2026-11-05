@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Portable state and review tools. Does not perform browser/network actions."""
+"""Portable state, review, and local dashboard tools. No job-site automation."""
 import argparse
 import hashlib
 import html
@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-VERSION = '0.3.0'
+VERSION = '0.4.0'
 TERMINAL = {'Submitted', 'Interview', 'Rejected', 'Offer', 'Withdrawn', 'Expired'}
 ACTIVE = {'Selected', 'Preparing', 'Filling', 'Ready for review'}
 
@@ -353,6 +353,9 @@ def main():
     sub = parser.add_subparsers(dest='command', required=True)
     for name in ['init', 'status', 'next', 'report', 'export']:
         sub.add_parser(name)
+    dashboard = sub.add_parser('dashboard', help='Serve the live local read-only dashboard')
+    dashboard.add_argument('--port', type=int, default=8765)
+    dashboard.add_argument('--open', action='store_true', help='Open in the default browser')
     show = sub.add_parser('show')
     show.add_argument('--job')
     run = sub.add_parser('run')
@@ -360,7 +363,11 @@ def main():
     args = parser.parse_args()
     try:
         ws = Workspace(args.workspace)
-        if args.command == 'init':
+        if args.command == 'dashboard':
+            from dashboard import serve
+            serve(ws.root, args.port, args.open)
+            return 0
+        elif args.command == 'init':
             result = ws.initialize()
         elif args.command == 'run':
             payload = sys.stdin.read() if args.input == '-' else Path(args.input).read_text(encoding='utf-8-sig')

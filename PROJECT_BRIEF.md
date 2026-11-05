@@ -36,6 +36,10 @@ Adds resume import, LinkedIn professional-profile exports, selected Indeed accou
 
 Direct LinkedIn/Indeed account reading remains dependent on the host's available tools and permitted access; this release does not add account OAuth or a private API. Scanned documents require a separate OCR/visual tool. The import feature does not depend on Firecrawl.
 
-## Boundaries
+## Release 0.4.0 — local dashboard
+
+Adds an optional dashboard inside the portable skill, using the canonical SQLite workspace in read-only mode. It includes overview counts, search/filter/sort for jobs, application details and blockers, profile/import reviews, document downloads, contacts/drafts and activity. The browser refreshes saved state every five seconds. Copyable requests connect the visual review back to the user's agent chat; the dashboard itself does not run the agent or mutate state. A Windows launcher opens the default workspace, with an optional custom workspace argument. The static HTML report remains available.
+
+## Runtime boundaries
 
 Skill installation does not install browser tools or grant account access. Local models require a tool-enabled host. Site access restrictions still apply. Personal profiles, browser credentials and generated application documents stay outside the distributed package and source repository.

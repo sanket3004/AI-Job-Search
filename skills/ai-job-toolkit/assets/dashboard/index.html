@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Job Toolkit · Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="#overview"><span class="brand-mark">J<span>↗</span></span><span>Job Toolkit<small>YOUR NEXT CHAPTER</small></span></a>
+    <div class="nav-label">WORKSPACE</div>
+    <nav aria-label="Main navigation">
+      <button data-view="overview" class="active">Overview <span>01</span></button>
+      <button data-view="jobs">Job pipeline <span>02</span></button>
+      <button data-view="profile">My profile <span>03</span></button>
+      <button data-view="documents">Documents <span>04</span></button>
+      <button data-view="contacts">Contacts & drafts <span>05</span></button>
+      <button data-view="activity">Activity <span>06</span></button>
+    </nav>
+    <div class="sidebar-note"><span class="live-dot"></span> Local workspace<p>Your AI does the work.<br>Follow the progress here.</p><small>Viewing only · No applications are sent from this dashboard.</small></div>
+  </aside>
+  <main>
+    <header class="topbar"><span id="breadcrumb">Workspace / Overview</span><div class="top-actions"><span id="sync" role="status">Connecting…</span><button id="refresh" class="quiet">Refresh</button><a class="quiet" href="api/export" download>Export data ↓</a></div></header>
+    <div id="error" role="alert" hidden></div>
+    <div id="content" aria-live="off"><div class="empty">Loading your workspace…</div></div>
+    <footer><span id="workspace"></span><span>Updates every 5 seconds while this tab is open</span></footer>
+  </main>
+  <dialog id="detail" aria-labelledby="detail-title"><div class="dialog-top"><span>APPLICATION DETAILS</span><button id="close-detail" class="quiet" aria-label="Close application details">Close ×</button></div><div id="detail-content"></div></dialog>
+  <dialog id="prompt-dialog" aria-labelledby="prompt-title"><h2 id="prompt-title">Continue with your AI</h2><p>Copy this request into your Codex, Claude Code, or compatible agent chat. This dashboard does not start the agent.</p><label for="prompt-text">Request</label><textarea id="prompt-text" readonly rows="5"></textarea><div class="top-actions"><button id="copy-prompt" class="primary">Copy request</button><button id="close-prompt" class="quiet">Close</button></div><p id="copy-status" role="status"></p></dialog>
+</body>
+</html>
