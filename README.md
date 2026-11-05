@@ -2,7 +2,7 @@
 
 Your AI companion from job discovery to application.
 
-An installable **Agent Skill** for a personal job search: fresh profile, job discovery, fit assessments, tailored documents, recruiting contacts, browser applications and tracking. Version 0.6.0.
+An installable **Agent Skill** for a personal job search: fresh profile, job discovery, fit assessments, tailored documents, recruiting contacts, browser applications and tracking. Version 0.7.0.
 
 The AI agent you already use supplies the reasoning and tools. The canonical package is **`skills/careerpilot/`**. It includes `SKILL.md`, focused workflow references, a standard-library Python state helper and Codex display metadata. It has no model API dependency and includes no personal profile.
 
@@ -125,3 +125,14 @@ Every agent `pause` creates an **Assistance** request and attempts one phone ale
 Automatic credential filling requires host password-manager support or the optional Playwright bridge connected to an existing authorized local CDP browser. The bridge fills but never submits; the host handles approved login/signup clicks and observed confirmation. MFA, CAPTCHA, unsupported browsers, and host-required confirmations still need assistance. Account permissions do not authorize application submission.
 
 See [full setup and browser compatibility](skills/careerpilot/references/accounts-and-assistance.md). The portable core is standard-library-only; the optional credential bridge requires `python -m pip install playwright` in the Python environment used by the host.
+
+
+## Gmail application updates (0.7)
+
+**Email updates** adds a read-only Gmail review workflow, application response statuses, supporting message excerpts and Gmail links, review/dismiss controls, optional automatic updates for confirmed matches and clear outcomes, and dated check history. It distinguishes application received, under review, assessment, interview, rejected, offer, withdrawn and unknown.
+
+Connect Gmail through your AI host, enter the intended mailbox in the dashboard, and enable review of emails related to saved applications. Use **Check Gmail with AI** and paste the generated request into your host agent. The dashboard does not itself connect to Gmail or launch a background agent. No email passwords or OAuth tokens are stored locally for this feature, and it never sends or modifies mail.
+
+The agent matches messages to exact saved applications, records minimal evidence, and imports through transactional state commands. Repeated message IDs are deduplicated; older, regressive, ambiguous and conflicting outcomes are held for review. An uncertain submission must be reconciled before applying an email outcome. “Approved for another round” is not treated as an employment offer.
+
+See [Gmail review agent](skills/careerpilot/references/email-review.md). Scheduled checks require a separately configured host scheduler; no schedule is installed automatically. Gmail access remains inactive until the user configures and authorizes the account.

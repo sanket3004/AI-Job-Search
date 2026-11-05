@@ -2,7 +2,7 @@
 name: careerpilot
 description: Manage a candidate's job search from a fresh profile through job discovery, fit ranking, tailored resumes, recruiting-contact research, browser-assisted applications, and outcome tracking. Use when the user wants to find or apply for jobs, prepare application materials, or resume an application queue.
 metadata:
-  version: "0.6.0"
+  version: "0.7.0"
 ---
 
 # CareerPilot
@@ -28,6 +28,7 @@ For a new candidate, offer **Import resume / LinkedIn profile or export / Indeed
 | Save account details, configure phone alerts | [Accounts and assistance](references/accounts-and-assistance.md) | Encrypted site-specific credentials, signup defaults, Telegram alerts |
 | Fill, apply, resume queue | [Browser applications](references/browser-applications.md) | Filled forms, paused exceptions, review or confirmed submission |
 | Find hiring team or draft outreach | [Recruiting contacts](references/contacts.md) | Sourced contact cards and unsent drafts |
+| Check company emails, update application statuses | [Gmail review agent](references/email-review.md) | Read-only mailbox review, matched evidence, review queue and application outcomes |
 | Track results, prepare interview | [Tracking and interviews](references/tracking.md) | Updated history, follow-ups and interview prep |
 | Open dashboard, view pipeline visually | [Local dashboard](references/dashboard.md) | Direct public-feed search and a visual overview of the same saved workspace |
 

@@ -58,3 +58,8 @@ Skill installation does not install browser tools or grant account access. Local
 ## Delivered in 0.6
 
 Encrypted Windows signup/account settings, exact-origin login/signup permission controls, optional credential-fill bridge, Telegram private-chat setup/test, automatic assistance requests on pause, failed-delivery retry, and dashboard resolution back to the application queue. Cross-platform password-vault backends and a universally compatible browser credential bridge are not implemented. Live Telegram activation requires the user’s bot and recipient setup.
+
+
+## Delivered in 0.7
+
+Host-run Gmail review workflow and Email updates dashboard: mailbox scope preferences, optional confirmed-outcome auto-apply, evidence-backed application matching, review/dismiss controls, message deduplication, chronology/conflict safeguards, and check history. This is a portable agent workflow, not a standalone Gmail OAuth client or persistent monitoring service.

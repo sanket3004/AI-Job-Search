@@ -11,6 +11,7 @@ Local PDF import optionally uses `pypdf` or the host's existing PDF reader. Othe
 | Documents | File creation; a document/PDF renderer for verified final outputs |
 | Form filling | Connected browser/computer tool with inspect, click, type, upload, navigation |
 | Submission | Browser capability, applicable host approvals, and recorded user authorization |
+| Review company emails | Connected read-only Gmail profile/search/read tools and configured account scope |
 | Sending outreach | A connected messaging tool plus separate user authorization |
 
 Discover the host's actual tools and read their documentation before using them. Do not invent MCP names or translate one host's browser calls into another's by guessing. Use available browser session IDs rather than reading cookie databases, exporting cookies, or reusing credentials behind the host's controls. Prefer user handoff for login/MFA challenges. A local model needs a tool-enabled agent runtime; a text-only chat or bare model endpoint cannot run this workflow by itself.

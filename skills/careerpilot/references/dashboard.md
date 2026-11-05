@@ -44,3 +44,6 @@ These are finite sources, not exhaustive LinkedIn/Indeed or city-wide scraping. 
 
 
 Version 0.6 adds Accounts & alerts and Assistance. See [setup and browser handoff](accounts-and-assistance.md). Additional same-origin POST routes save encrypted settings, discover Telegram private chats, send a test, retry a notification, or resume a paused job with a resolution note. They never submit applications. Secret settings are omitted from state exports.
+
+
+Version 0.7 adds Email updates. Its local same-origin POST routes email-config, email-apply and email-dismiss manage scope and review records; no mail-reading or sending API is exposed. Check Gmail with AI generates a prompt for the connected host. See [Gmail review](email-review.md) for setup and status meanings.

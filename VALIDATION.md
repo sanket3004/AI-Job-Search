@@ -47,3 +47,12 @@ The dark desktop interface was visually inspected. No console errors/warnings we
 - Telegram network delivery was mocked in automated tests. No real bot token/recipient is configured and no live phone notification was sent.
 - Credential bridge behavior was tested with a simulated page. No real employer login/signup or application submission was performed. Live Playwright/CDP compatibility requires a connected authorized browser and optional dependency.
 - The user’s existing profile, application data and permissions were not imported or changed by validation.
+
+
+## Release 0.7.0 validation — November 5, 2026
+
+- 59 Python tests passed, including seven Gmail tracking behavior tests and a dashboard route protection check. Covered default review, opt-in automatic updates, message deduplication, changed/revoked permissions, account mismatch, stale/regressive messages, conflicting final outcomes, unknown classifications, scope/evidence validation and check completion.
+- JavaScript syntax and skill frontmatter validation passed.
+- Browser smoke test used an isolated synthetic workspace: opened Email updates, reviewed a demo interview invitation, applied it with a review note, and observed Submitted → Interview, pending → applied, and the review count decrease to zero.
+- No live Gmail profile, messages or attachments were accessed; no mail was sent or modified. End-to-end mailbox retrieval awaits the user's configured account and connected host Gmail tools.
+- No recurring task was created. The dashboard's Check Gmail with AI action generates a host-agent prompt and does not independently run an agent.

@@ -112,7 +112,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         server = self.server
         action = self.path.removeprefix(f'/{server.token}/api/')
-        if self.path not in {f'/{server.token}/api/{a}' for a in ('search','settings','telegram-test','telegram-chats','assistance-retry','assistance-resume')}:
+        if self.path not in {f'/{server.token}/api/{a}' for a in ('search','settings','telegram-test','telegram-chats','assistance-retry','assistance-resume','email-config','email-apply','email-dismiss')}:
             return self.respond(405, 'This action is not available from this dashboard.')
         if (self.headers.get('Host') != urlsplit(server.origin).netloc
                 or self.headers.get('Origin') != server.origin
@@ -129,7 +129,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
             query = json.loads(self.rfile.read(size))
             if not isinstance(query, dict):
                 raise ValueError('Request must be an object.')
-            if action == 'settings':
+            if action in {'email-config','email-apply','email-dismiss'}:
+                result = Workspace(server.root).mutate(dict(query, op=action))
+            elif action == 'settings':
                 result = Settings(server.root).save(query)
             elif action == 'telegram-chats':
                 result = telegram_chats(server.root, query.get('token', ''))

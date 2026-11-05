@@ -2,7 +2,9 @@
 
 Run `status` for the current workspace or `show --job ID` for the full saved record. Use `report` for an offline review page and `export` for a JSON backup. Exported files contain candidate data and belong in the private workspace.
 
-For a live visual overview, use the [local dashboard](dashboard.md). It refreshes the canonical saved state and supports searching jobs, inspecting blockers and form checkpoints, downloading documents, and reviewing profile imports, contacts, drafts, and history. It does not run the agent or change records.
+For a live visual overview, use the [local dashboard](dashboard.md). It refreshes the canonical saved state and supports searching jobs, inspecting blockers and form checkpoints, downloading documents, and reviewing profile imports, contacts, drafts, and history. It does not start an AI agent. Its explicit review controls can update saved records.
+
+For company email updates, use the [Gmail review workflow](email-review.md).
 
 Use `outcome` to record Interview, Rejected, Offer, Withdrawn, or Expired, with a source or user statement in the note. Keep application history; do not turn an offer into acceptance without the user's decision. Mail/calendar connectors may supply evidence only when the requested scope and host permissions cover them. Do not change records from ambiguous email matches.
 

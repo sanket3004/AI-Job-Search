@@ -2,7 +2,7 @@
 let state = null, workspace = '', view = 'overview', selectedJob = null, lastPayload = '', busy = false;
 let filter = 'All statuses', search = '', sort = 'relevance', band = 'All scores';
 let rankData = {}, activeSearch = null, selectedSearch = 'latest', searchPending = false, formSeeded = false;
-const titles = {settings:'Accounts & alerts', assistance:'Assistance',overview: 'Overview', jobs: 'Job pipeline', profile: 'My profile', documents: 'Documents', contacts: 'Contacts & drafts', activity: 'Activity', history: 'Search history'};
+const titles = {email:'Email updates',settings:'Accounts & alerts', assistance:'Assistance',overview: 'Overview', jobs: 'Job pipeline', profile: 'My profile', documents: 'Documents', contacts: 'Contacts & drafts', activity: 'Activity', history: 'Search history'};
 const $ = id => document.getElementById(id);
 const jobs = () => Object.values(state?.jobs || {});
 const label = value => String(value).replaceAll('_', ' ').replaceAll('-', ' ').replace(/^./, c => c.toUpperCase());
@@ -141,6 +141,7 @@ function section(parent,title,...content){add(parent,add(el('section','detail-se
 function renderJob() {
   const base=state.jobs[selectedJob]; const snapshot=chosenRun()?.listings?.[selectedJob]; const j=base ? {...base,...snapshot,status:base.status} : null; if(!j){$('detail').close();return;} const root=$('detail-content');root.replaceChildren();const title=el('h2','',j.title);title.id='detail-title';add(root,title,el('p','muted',`${j.company} · ${j.location||'Location not recorded'}`),add(el('div','detail-meta'),pill(j.status),el('small','',`Job ${j.id}`)),add(el('div','link-row'),external('Open posting ↗',j.url),j.checkpoint?external('Open application page ↗',j.checkpoint.page_url):null),el('p','muted',`Source: ${j.source} · Retrieved ${date(j.retrieved_at)}`));
   const callout=el('div',`callout ${['Needs attention','Submission uncertain','Submitting'].includes(j.status)?'warning':''}`);add(callout,el('h3','','Next step'),el('p','',nextAction(j)),j.status==='Needs attention'?el('p','',j.blocker):null,ask('Discuss with AI',`Review job ${j.id} (${j.title} at ${j.company}). Explain its current state and help with the next step. Do not submit or send outreach without my authorization.`,'quiet'));add(root,callout);
+  if(j.email_update)section(root,'Latest company response',pill(j.email_update.status),el('p','muted',`Email received ${fullDate(j.email_update.received_at)}`),button('View email evidence',()=>{$('detail').close();go('email');}));
   section(root,'Posting & search details',valueNode({posted:fullDate(posted(j)),source_fetched:fullDate(j.discovery?.fetched_at),saved:fullDate(j.created_at)}));
   section(root,'Search relevance',valueNode(scoreFor(j)));
   section(root,'AI fit assessment',j.evaluation?valueNode(j.evaluation):el('p','muted','No assessment saved yet.'));
@@ -152,11 +153,11 @@ function renderJob() {
   const description=el('details');add(description,el('summary','','Full saved job description'),el('p','prose',j.description));add(root,description);
 }
 function openJob(id){selectedJob=id;renderJob();if(!$('detail').open)$('detail').showModal();}
-function render(){if(!state)return;const root=$('content');root.replaceChildren();({overview,jobs:jobList,profile:profilePage,documents:documentsPage,contacts:contactsPage,activity:activityPage,history:historyPage,settings:settingsPage,assistance:assistancePage})[view](root);if($('detail').open)renderJob();}
+function render(){if(!state)return;const root=$('content');root.replaceChildren();({overview,jobs:jobList,profile:profilePage,documents:documentsPage,contacts:contactsPage,activity:activityPage,history:historyPage,settings:settingsPage,assistance:assistancePage,email:emailPage})[view](root);if($('detail').open)renderJob();}
 async function refresh(){
   if(busy)return;busy=true;
   try{const response=await fetch('api/state',{cache:'no-store'});if(!response.ok)throw new Error('Workspace unavailable');const payload=await response.json();const signature=JSON.stringify(payload);state=payload.state;workspace=payload.workspace;rankData=payload.rankings||{};activeSearch=payload.active_search||null;updateSearchStatus();if(!formSeeded){const last=runs().at(-1);$('role-input').value=last?.role||state.profile.target_roles?.[0]||'';$('location-input').value=last?.location||state.profile.location||'';$('posted-input').value=last?.posted_within||'any';$('unknown-dates').checked=last?.include_unknown_dates||false;formSeeded=true;}$('workspace').textContent=workspace;
-    if(signature!==lastPayload && view!=='settings'){lastPayload=signature;const active=document.activeElement;const isSearch=active?.type==='search';const caret=isSearch?active.selectionStart:null;render();if(isSearch){const input=document.querySelector('input[type="search"]');input?.focus();if(input&&caret!==null)input.setSelectionRange(caret,caret);}}
+    if(signature!==lastPayload && view!=='settings' && !(view==='email' && $('content').contains(document.activeElement))){lastPayload=signature;const active=document.activeElement;const isSearch=active?.type==='search';const caret=isSearch?active.selectionStart:null;render();if(isSearch){const input=document.querySelector('input[type="search"]');input?.focus();if(input&&caret!==null)input.setSelectionRange(caret,caret);}}
     $('sync').textContent=`Synced ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;$('error').hidden=true;
   }catch{ $('sync').textContent='Disconnected';$('error').hidden=false;$('error').textContent=state?'Connection lost. You are viewing the last successful snapshot. Restart the dashboard or refresh when the workspace is available.':'Cannot load this workspace. Check that the dashboard server is still running, then refresh.';}finally{busy=false;}
 }
@@ -220,4 +221,38 @@ function assistancePage(root) {
       add(p,note,button('Resolved — return to queue',async()=>{if(!note.value.trim()){note.focus();return;}try{await localAction('assistance-resume',{job_id:item.job_id,note:note.value});await refresh();}catch(e){alert(e.message);}},'primary'),ask('Continue with AI',`Inspect job ${item.job_id} and continue it after the blocker has been resolved.`,'quiet'));
     }add(root,p);
   });
+}
+
+function responseStatus(j){return ['Rejected','Offer','Withdrawn','Expired','Interview','Submitting','Submission uncertain'].includes(j.status)?j.status:(j.email_update?.status||j.status);}
+function emailPage(root) {
+  const tracking=state.email_tracking||{}, config=tracking.config||{}, checks=Object.values(tracking.checks||{}).reverse(), messages=Object.values(tracking.messages||{}).sort((a,b)=>b.received_at.localeCompare(a.received_at));
+  add(root,heading('Hear back. Stay on track.','Company responses, matched applications, and the evidence behind each update.',ask('Check Gmail with AI','Run the CareerPilot Gmail email-review workflow for my configured account and saved applications. Use only read-only Gmail tools, record the check scope and evidence, and finish the check honestly. Do not send replies or change mailbox labels.')));
+  const setup=panel('Gmail access & update preferences');
+  add(setup,el('p','muted','Connect Gmail through your AI host, then save the account and enable review here. This screen does not connect Gmail or run a background agent. “Check Gmail with AI” gives you a prompt to run in your agent chat.'));
+  const f=el('form','settings-form');const account=settingField(f,'account','Gmail account email',config.account||'','email');account.required=true;
+  const enabled=settingField(f,'enabled','Allow read-only review of emails related to my saved applications',config.enabled||false,'checkbox');
+  const automatic=settingField(f,'auto_apply','Automatically apply confirmed matches and clear outcomes',config.auto_apply||false,'checkbox');
+  const save=el('button','primary','Save email preferences');save.type='submit';const feedback=el('p');feedback.setAttribute('role','status');add(f,save,feedback);
+  f.addEventListener('submit',async event=>{event.preventDefault();save.disabled=true;try{await localAction('email-config',{account:account.value,enabled:enabled.checked,auto_apply:automatic.checked});feedback.textContent='Saved. Run Check Gmail with AI to review messages.';}catch(e){feedback.textContent=e.message;}finally{save.disabled=false;}});add(root,add(setup,f));
+  const last=checks.find(c=>c.status!=='running');add(root,el('p','muted',last?`Last check: ${fullDate(last.finished_at)} · ${last.status} · ${last.count} new messages · ${last.note}`:'No email check has completed yet. No Gmail messages have been read by this dashboard.'));
+  const stats=el('div','stats');['Interview','Offer','Rejected'].forEach(status=>add(stats,add(el('div','stat'),el('span','label',status),el('strong','',jobs().filter(j=>responseStatus(j)===status).length))));add(stats,add(el('div','stat'),el('span','label','Needs review'),el('strong','',messages.filter(m=>m.review==='pending').length)));add(root,stats);
+  const applications=panel('Application status');
+  jobs().filter(j=>j.email_update||['Submitted','Interview','Rejected','Offer','Withdrawn','Expired','Submission uncertain'].includes(j.status)).forEach(j=>add(applications,add(el('div','row'),button(`${j.title} · ${j.company}`,()=>openJob(j.id),'text-button'),pill(responseStatus(j)))));
+  if(!applications.querySelector('.row'))add(applications,el('p','muted','Submitted applications and email-confirmed responses will appear here.'));
+  add(root,applications);
+  const toolbar=el('div','toolbar'), select=el('select');select.setAttribute('aria-label','Email review filter');['All messages','Needs review','Applied','Dismissed'].forEach(v=>add(select,el('option','',v)));add(root,add(toolbar,select));const list=el('div');add(root,list);
+  const draw=()=>{list.replaceChildren();const filtered=messages.filter(m=>select.value==='All messages'||m.review===({'Needs review':'pending',Applied:'applied',Dismissed:'dismissed'})[select.value]);
+    if(!filtered.length)add(list,empty('No matching email updates','Your agent will record relevant messages here after a Gmail check.'));
+    filtered.forEach(m=>{const j=state.jobs[m.job_id],p=panel(m.subject,`${fullDate(m.received_at)} · ${m.review}`);
+      add(p,pill(m.suggested_status),el('p','muted',`From ${m.sender} · ${m.account}`),el('p','',j?`${j.title} · ${j.company}`:'Application match needs review'),el('p','prose',m.summary),external('Open source email in Gmail ↗',m.source_url));
+      const evidence=el('details');add(evidence,el('summary','','Evidence & matching'),el('p','prose',m.evidence),el('p','muted',m.match_reason),el('p','muted',`Match: ${m.match_confidence} · Outcome: ${m.classification_confidence}`));add(p,evidence);
+      if(m.hold_reason)add(p,el('p','warning-text',m.hold_reason));
+      if(m.review==='pending'){
+        const choice=el('select');choice.setAttribute('aria-label','Application for '+m.subject);const placeholder=el('option','','Choose application');placeholder.value='';add(choice,placeholder);jobs().forEach(job=>{const o=el('option','',`${job.title} · ${job.company}`);o.value=job.id;add(choice,o);});choice.value=m.job_id||'';
+        const note=el('input');note.placeholder='Review note';note.setAttribute('aria-label','Review note for '+m.subject);const status=el('p');status.setAttribute('role','status');
+        const act=async action=>{if(!note.value.trim()){status.textContent='Add a review note first.';return;}try{await localAction(action,{email_id:m.id,job_id:choice.value,note:note.value});await refresh();render();}catch(e){status.textContent=e.message;}};
+        add(p,choice,note,button('Apply status',()=>act('email-apply'),'primary'),button('Dismiss',()=>act('email-dismiss')),status);
+      }add(list,p);
+    });};select.addEventListener('change',draw);draw();
+  if(checks.length){const history=panel('Email check history');checks.slice(0,20).forEach(c=>add(history,add(el('div','row'),add(el('div'),el('strong','',`${fullDate(c.started_at)} · ${c.status}`),el('p','muted',c.scope),el('small','',`${c.account} · ${c.count} new records${c.status==='running'?' · Completion not recorded; ask your agent to reconcile this run.':''}`)))));add(root,history);}
 }

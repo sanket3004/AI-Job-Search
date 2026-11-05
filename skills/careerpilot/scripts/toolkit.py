@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-VERSION = '0.6.0'
+VERSION = '0.7.0'
 TERMINAL = {'Submitted', 'Interview', 'Rejected', 'Offer', 'Withdrawn', 'Expired'}
 ACTIVE = {'Selected', 'Preparing', 'Filling', 'Ready for review'}
 
@@ -122,6 +122,9 @@ class Workspace:
 
     def apply(self, state, data):
         op = text(data.get('op'), 'op')
+        if op.startswith('email-'):
+            from email_tracking import apply
+            return apply(state, data)
         if op in {'assistance-claim', 'assistance-delivery', 'assistance-retry'}:
             item = state.get('assistance', {}).get(data.get('request_id'))
             require(item is not None, 'Unknown assistance request')

@@ -148,6 +148,16 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(self.get('api/assistance-resume','POST',headers=headers,body=json.dumps({'job_id':jid,'note':'Resolved manually'}))[0],202)
         self.assertEqual(self.ws.read()['jobs'][jid]['status'],'Preparing')
 
+    def test_email_controls_require_same_origin_and_offer_no_mail_send_api(self):
+        payload=json.dumps({'account':'fixture@example.invalid','enabled':True,'auto_apply':False})
+        headers={'Content-Type':'application/json','X-CareerPilot-Request':'email-config','Origin':self.server.origin}
+        self.assertEqual(self.get('api/email-config','POST',body=payload)[0],403)
+        self.assertEqual(self.get('api/email-config','POST',headers=headers,body=payload)[0],202)
+        self.assertTrue(self.ws.read()['email_tracking']['config']['enabled'])
+        for route in ['email-record','email-check-start','email-send','email-read']:
+            self.assertEqual(self.get('api/'+route,'POST',headers=headers,body='{}')[0],405)
+        self.assertEqual(self.get('api/email-apply','POST',body='{}')[0],403)
+
 
 if __name__ == '__main__':
     unittest.main()
