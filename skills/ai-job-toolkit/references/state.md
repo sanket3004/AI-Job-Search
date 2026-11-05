@@ -20,6 +20,8 @@ Each request has `op`, plus the fields below. Job operations require the returne
 | op | Fields |
 |---|---|
 | `profile-save` | `profile`: complete object; replaces prior profile, increments revision |
+| `profile-preview` | complete merged `profile`, current `base_revision`, absolute `evidence_files` from this workspace's imports folder; saves before/after changes without applying |
+| `profile-apply` | `preview_id`, actual `user_confirmation`; applies the reviewed profile only if its revision and source hashes still match |
 | `job-add` | `title`, `company`, `url`, `description`, `source`; optional `location` |
 | `evaluate` | `job_id`, `evaluation` with arrays `strengths`, `gaps`, `unknowns`, `evidence`; `recommendation`; optional `score` 0–100 plus `rationale` |
 | `select` | `job_id`; Saved → Selected |
@@ -63,3 +65,5 @@ Do not use example observations as real evidence. `checkpoint` overwrites the pr
 `next` returns the first Selected/Preparing job plus IDs left Filling/Submitting/Submission uncertain. Review in-flight IDs after an interruption. A Filling job can receive a new checkpoint or be paused. Submitting/uncertain jobs must be reconciled, never retried automatically. Paused jobs stay excluded until `resume`. The helper is serial per workspace transaction; do not run multiple browser workers against the same job.
 
 The HTML report is a private read-only snapshot, with escaped content and no scripts. Its document links reference the workspace artifacts. Rebuild after changes. It cannot restore a browser session or perform submission.
+
+Profile imports are described in [profile import](profile-import.md). `show` includes saved `profile_imports` previews and their sources. They are private records, not extra skill instructions. Include the imports directory in a full workspace backup to preserve source evidence. `profile-preview` records the proposal but never changes the candidate profile or existing ready applications; `profile-apply` changes the profile and invalidates ready reviews. Confirmation must come from the user; a text field alone is not an authorization boundary.

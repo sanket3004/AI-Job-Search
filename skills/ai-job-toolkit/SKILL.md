@@ -2,7 +2,7 @@
 name: ai-job-toolkit
 description: Manage a candidate's job search from a fresh profile through job discovery, fit ranking, tailored resumes, recruiting-contact research, browser-assisted applications, and outcome tracking. Use when the user wants to find or apply for jobs, prepare application materials, or resume an application queue.
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # AI Job Toolkit
@@ -15,13 +15,14 @@ Resolve `scripts/toolkit.py` relative to this skill directory. Use Python 3.10+ 
 
 Run `status` first when the workspace exists. Run `init` for a new workspace. These commands require no AI credentials. Use [state commands](references/state.md) when reading or changing records. All persistent changes go through the helper; never hand-edit its database.
 
-For a new candidate, collect target roles, locations/work arrangements, experience, skills, and current resume if they choose to provide one. Ask only for missing information relevant to the requested task. Store unknown answers as unknown, especially work authorization, dates, salary expectations, and eligibility. Never infer an answer from a name, nationality, location, or demographic characteristic.
+For a new candidate, offer **Import resume / LinkedIn profile or export / Indeed profile or export / Answer questions**. If the user already supplied a file or chose a path, proceed with it. Read [profile import](references/profile-import.md) for files, exports, or authorized account access. Collect only missing target roles, locations/work arrangements and relevant facts afterward. Preview proposed facts and conflicts before applying an imported profile; keep an existing profile until the user confirms the changes. Store unknown answers as unknown, especially work authorization, dates, salary expectations, and eligibility. Never infer an answer from a name, nationality, location, or demographic characteristic.
 
 ## Choose the requested workflow
 
 | User intent | Read next | Result |
 |---|---|---|
 | Set up or update profile | [Profile and documents](references/profile-and-documents.md) | Fresh structured facts and reusable answers |
+| Import resume, LinkedIn or Indeed data | [Profile import](references/profile-import.md) | Source-linked facts, conflict review, confirmed profile |
 | Find jobs, evaluate matches | [Discovery and ranking](references/discovery.md) | Deduplicated postings, evidence and fit assessments |
 | Tailor resume or cover letter | [Profile and documents](references/profile-and-documents.md) | Verified documents attached to the selected job |
 | Fill, apply, resume queue | [Browser applications](references/browser-applications.md) | Filled forms, paused exceptions, review or confirmed submission |

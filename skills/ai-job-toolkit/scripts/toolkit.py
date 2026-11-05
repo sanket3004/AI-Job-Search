@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-VERSION = '0.2.0'
+VERSION = '0.3.0'
 TERMINAL = {'Submitted', 'Interview', 'Rejected', 'Offer', 'Withdrawn', 'Expired'}
 ACTIVE = {'Selected', 'Preparing', 'Filling', 'Ready for review'}
 
@@ -116,6 +116,39 @@ class Workspace:
 
     def apply(self, state, data):
         op = text(data.get('op'), 'op')
+        if op == 'profile-preview':
+            profile = data.get('profile')
+            require(isinstance(profile, dict) and bool(profile), 'Proposed profile must be a nonempty object')
+            require(data.get('base_revision') == state['profile_revision'], 'Profile changed; reload and rebuild the proposal')
+            sources = data.get('evidence_files')
+            require(isinstance(sources, list) and sources and all(isinstance(s, str) for s in sources), 'Supply extracted evidence file paths')
+            provenance = []
+            for source in sources:
+                path = Path(source).expanduser().resolve()
+                require(path.is_relative_to(self.root / 'imports') and path.is_file(), 'Evidence must be a file in this workspace imports folder')
+                evidence = json.loads(path.read_text(encoding='utf-8'))
+                require(evidence.get('schema_version') == 1 and isinstance(evidence.get('documents'), list), 'Invalid evidence file')
+                provenance.append({'path': path.relative_to(self.root).as_posix(), 'sha256': file_digest(path)})
+            changes = {k: {'before': state['profile'].get(k), 'after': profile.get(k)} for k in sorted(set(state['profile']) | set(profile))
+                       if (k in state['profile']) != (k in profile) or state['profile'].get(k) != profile.get(k)}
+            preview_id = uuid.uuid4().hex
+            preview = {'id': preview_id, 'created_at': utc(), 'base_revision': state['profile_revision'],
+                       'profile': profile, 'sources': provenance, 'changes': changes, 'applied': False}
+            state.setdefault('profile_imports', {})[preview_id] = preview
+            return {'preview_id': preview_id, 'changes': changes, 'profile_changed': False}
+        if op == 'profile-apply':
+            preview = state.get('profile_imports', {}).get(data.get('preview_id'))
+            require(preview is not None and not preview['applied'], 'Unknown or already applied import preview')
+            require(preview['base_revision'] == state['profile_revision'], 'Profile changed since preview; rebuild and review it again')
+            confirmation = text(data.get('user_confirmation'), 'User confirmation of this preview')
+            for source in preview['sources']:
+                path = (self.root / source['path']).resolve()
+                require(path.is_relative_to(self.root / 'imports') and path.is_file() and file_digest(path) == source['sha256'], 'Import evidence changed; create a new preview')
+            result = self.apply(state, {'op': 'profile-save', 'profile': preview['profile']})
+            preview['applied'] = True
+            preview['applied_at'] = utc()
+            preview['user_confirmation'] = confirmation
+            return dict(result, preview_id=preview['id'])
         if op == 'profile-save':
             profile = data.get('profile')
             require(isinstance(profile, dict) and bool(profile), 'profile must be a nonempty object')

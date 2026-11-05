@@ -1,0 +1,2 @@
+# Optional local PDF extraction. Other imports and the core helper use the standard library.
+pypdf>=6,<7

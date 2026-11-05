@@ -2,6 +2,8 @@
 
 The skill is portable Markdown plus standard-library Python. It uses the reasoning model already running in the host. No provider key or model subscription is bundled.
 
+Local PDF import optionally uses `pypdf` or the host's existing PDF reader. Other import formats and the state helper need no third-party Python packages. Account export import does not connect an account; direct account reading requires an available permitted connector/browser and the user's authorization.
+
 | Operation | Required host capability |
 |---|---|
 | Profile and tracking | Read/write files and run Python 3.10+ |

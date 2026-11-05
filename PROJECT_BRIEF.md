@@ -30,6 +30,12 @@ Browser actions are orchestrated by the host agent using its connected tools; th
 4. Add reusable document templates and permitted job-source adapters where they improve reliability.
 5. Expand review/report usability and validated compatibility across host environments.
 
+## Release 0.3.0 — profile import options
+
+Adds resume import, LinkedIn professional-profile exports, selected Indeed account/profile exports, and guided manual setup. Local extraction supports PDF (optional pypdf), DOCX, TXT/MD, CSV and JSON, including selected ZIP/folder members. The host AI proposes a merged profile from source evidence; the helper records a before/after preview and applies it only after user confirmation, with checks against stale profiles and changed evidence. No old toolkit profile is imported automatically.
+
+Direct LinkedIn/Indeed account reading remains dependent on the host's available tools and permitted access; this release does not add account OAuth or a private API. Scanned documents require a separate OCR/visual tool. The import feature does not depend on Firecrawl.
+
 ## Boundaries
 
 Skill installation does not install browser tools or grant account access. Local models require a tool-enabled host. Site access restrictions still apply. Personal profiles, browser credentials and generated application documents stay outside the distributed package and source repository.

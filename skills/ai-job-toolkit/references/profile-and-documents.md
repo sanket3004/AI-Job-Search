@@ -2,7 +2,7 @@
 
 ## Fresh profile
 
-Build a new profile from information the current user supplies. A user-selected resume may seed facts after review; do not search unrelated folders or import an old toolkit profile. Collect in small groups and save progress. The profile JSON supports:
+Build a new profile from information the current user supplies. Offer resume import, LinkedIn/Indeed profile or export import, and guided questions; use [profile import](profile-import.md) for extraction and reviewed merges. Do not search unrelated folders or import an old toolkit profile. Collect in small groups and save progress. The profile JSON supports:
 
 ```json
 {
@@ -23,7 +23,7 @@ Build a new profile from information the current user supplies. A user-selected 
 
 Omit unknown facts. Store relevant applicant answers only when volunteered/confirmed. Do not put passwords, authentication tokens, government ID numbers, or payment information in the profile. If a form asks for such information, hand it to the user rather than persist it. Ask the user about required personal eligibility questions instead of deriving answers.
 
-`profile-save` replaces the profile and increments its revision. Read it before editing so unrelated facts are preserved. Existing form approvals become stale; re-review affected ready applications.
+`profile-save` replaces the profile and increments its revision for direct manual updates. Imported facts use `profile-preview` followed by `profile-apply` after user review. Read the current profile before either path so unrelated facts are preserved. Existing form approvals become stale; re-review affected ready applications.
 
 ## Tailor documents
 
