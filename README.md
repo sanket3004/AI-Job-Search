@@ -1,39 +1,67 @@
 # AI Job Toolkit
 
-A local job-search workspace. Foundation release 0.1. Requires Python 3.10 or later; no package installation needed.
+An installable **Agent Skill** for a personal job search: fresh profile, job discovery, fit assessments, tailored documents, recruiting contacts, browser applications and tracking. Version 0.2.0.
 
-## Start
+The AI agent you already use supplies the reasoning and tools. The canonical package is **`skills/ai-job-toolkit/`**. It includes `SKILL.md`, focused workflow references, a standard-library Python state helper and Codex display metadata. It has no model API dependency and includes no personal profile.
 
-Double-click **Start Toolkit.bat**, or run `python server.py` in this folder. Your browser opens at http://127.0.0.1:8765. Keep the server window open. Stop with Ctrl+C. If the port is in use, run `python server.py --port 8766`.
+## Install and use
 
-## Available now
+Python 3.10+ is needed for saved state. From this repository, install into a project:
 
-- Responsive dashboard with profile, matches, application queue, tracker and settings.
-- Editable candidate profile persisted in SQLite.
-- Save job descriptions and URLs, with duplicate URL detection.
-- Transparent keyword overlap ranking, search and status filtering.
-- Manual application statuses, pause reasons, notes and activity history.
-- CSV export of job records (not a full workspace backup).
-- Saved provider preferences; prepare-only submission setting.
+```powershell
+python tools/install_skill.py --host codex --project "D:\path\to\your\workspace"
+python tools/install_skill.py --host claude --project "D:\path\to\your\workspace"
+```
 
-No example applications or personal data are preloaded. Add a profile and real job postings to begin. Existing profile files are not imported automatically.
+For all local projects, use `--user` instead of `--project ...`. Use `--dry-run` to print the destination without writing. The installer is idempotent for identical files and refuses to overwrite a different existing skill. The full folder can also be copied into another agent's documented skill location.
 
-## Not connected yet
+- Codex: invoke **`$ai-job-toolkit`**.
+- Claude Code: invoke **`/ai-job-toolkit`**.
+- Local models: load the skill in a compatible agent runtime with file, Python and browser tools. A bare model endpoint does not supply those capabilities.
 
-AI provider execution, job scraping, resume import, document generation, browser form filling, automatic queue execution and submission are not implemented in this release. Statuses are manual records, including “Submitted” and “Ready for review”; changing them does not perform actions on job portals. Settings save preferences only. Keyword percentages count listed profile skills found in a posting and are not AI assessments or eligibility scores.
+Examples:
 
-## Data and access
+> Use this skill to create a fresh profile and find suitable jobs.
 
-Saved data lives in `data/toolkit.db`. To back up the complete workspace, stop the server and copy this database. The server binds only to this computer; it is a single-user local app, with no account system. Files are not encrypted by the app. Do not expose this server to a network or commit the database to Git.
+> Prepare applications for these three roles. Fill the forms, pause anything that needs my input, and leave Submit to me.
 
-## Next milestones
+> Show my application progress and draft a message to a verified recruiting contact for this role.
 
-1. Import the original toolkit's profile and tracker with a preview before saving.
-2. Provider adapters for Claude, OpenAI and local models, with explicit connection checks.
-3. Search adapters, evidence-based fit ranking, tailored documents and PDF checks.
-4. Browser application agent, resumable queue and review checkpoints.
-5. Per-application approval and scoped automatic submission with confirmation evidence.
+## What works in this release
 
-## Checks
+- Portable workflow instructions with progressive references for each job-search stage.
+- Fresh profile and durable job records, deduplication, fit assessments, notes, contacts and unsent outreach drafts.
+- Document copies with hashes; review snapshots tied to the profile, answers and exact files.
+- Per-job pause/resume, explicit queue selection, submission authorization records, and uncertain-result recovery.
+- A private HTML review report and JSON state export.
+- Installation, ZIP packaging, automated behavior tests and a local browser-form simulation.
 
-Run `python -m unittest discover -s tests -v` for API and persistence checks.
+The host AI performs web research, document authoring and browser actions through tools it already has. The Python helper **does not scrape sites, drive a browser, send messages or submit applications**. Installing the skill does not add those tools or grant permissions. Browser workflows work only where the host tools and site access permit them; universal form support and unattended applications on LinkedIn/Indeed are not claimed. Live employer applications have not been submitted in release validation.
+
+## User experience
+
+Ask in ordinary language. The skill offers a short task menu when useful and returns job tables, clear next actions and a read-only HTML report. All browser filling ends at review by default. Specific submission approval or a scoped automatic batch can be recorded when authorized, subject to the host's permission requirements. Contact outreach has separate authorization.
+
+Candidate data goes in an explicit private workspace, outside the installed skill. The helper initializes a workspace ignore file; avoid placing data in source control. Workspace files are not encrypted by this package. Browser sessions and credentials remain managed by the host. A database backup must include the artifacts directory to preserve document bytes.
+
+## Repository layout
+
+```text
+skills/ai-job-toolkit/    Canonical installable skill
+tools/                   Installer and ZIP builder
+tests/                   State/packaging tests and local browser fixture
+legacy/dashboard/        Archived standalone prototype; separate data model
+```
+
+The old dashboard is retained for reference and is not synchronized with the skill workspace. Use the skill's generated report for the current application's saved state.
+
+## Validate and package
+
+```powershell
+python -m unittest discover -s tests -v
+python tools/package_skill.py
+```
+
+The ZIP is written to `dist/ai-job-toolkit.zip`, containing only the canonical skill folder. It excludes runtime data, caches and the archived dashboard. A ZIP does not guarantee support by every chat interface; use that host's documented skill installation flow.
+
+Installation references: [Codex skills](https://learn.chatgpt.com/docs/build-skills), [Claude Code skills](https://code.claude.com/docs/en/skills).

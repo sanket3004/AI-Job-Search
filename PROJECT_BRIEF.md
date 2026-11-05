@@ -1,71 +1,35 @@
-# AI Job Toolkit — Product Brief
+# AI Job Toolkit — skill package
 
-Status: foundation release 0.1 implemented. Local dashboard, profile editing, job records, keyword matching, manual tracking, settings preferences, CSV export, and API tests are available. AI providers, scraping, document generation, and browser automation remain planned.
+## Product direction
 
-## Goal
-Build an easy-to-use job search application based on the existing AI Job Search toolkit, with a visual interface, interchangeable AI providers, and browser-assisted applications.
+An installable skill that the user adds to an AI agent, analogous to their Reverse Engineer Anything skill. The host supplies its chosen model and tools; the package supplies task instructions, persistent records and reusable helpers. A standalone dashboard is optional, not the product's foundation.
 
-## User requirements
-- Use this folder for the new toolkit; use the existing toolkit as a reference.
-- Replace the difficult command-driven experience with a clear interface.
-- Support Claude, OpenAI/ChatGPT/Codex, and local AI models through suitable integrations.
-- Preserve profile creation, job discovery, deduplication, match ranking, tailored resumes and cover letters, interview preparation, and application tracking.
-- An application agent opens job application pages, fills forms using the candidate profile and prepared documents, and uploads required files.
-- Default behavior: complete the form and leave final submission to the user.
-- Offer explicitly authorized automatic submission, including a mode that grants ongoing access within the user's selected scope.
-- If one application encounters an error or missing information, pause that application with a reason and continue to the next job.
+## Requirements
 
-## Proposed interface
-A dashboard running locally and opened in a browser. This is a design proposal, not yet an implemented or confirmed platform choice.
+- Start with a fresh user profile. Never import the author's existing personalized profile.
+- Support compatible Claude Code, Codex and local-model agent environments without embedding a model vendor.
+- Search jobs from permitted sources, including LinkedIn/Indeed where supported, with pasted postings and employer-site alternatives.
+- Evaluate fit against actual experience; draft tailored resumes and cover letters without invented claims.
+- Find recruiting contacts through public professional sources, attach evidence, and include only published business emails. Prepare outreach drafts; sending requires separate authorization.
+- Prioritize browser-assisted applications: fill observed fields, upload the correct documents, handle validation, pause blocked jobs and continue other selected jobs.
+- Default to prepare-only. Support explicit per-application or scoped batch submission authorization, bound to reviewed content and subject to host permissions.
+- Preserve checkpoints and exact document versions. Reconcile ambiguous submissions before retrying.
+- Keep the interface simple through natural-language tasks, compact tables, meaningful next actions and a local review report.
 
-Navigation:
-1. Overview: jobs found, applications awaiting review, paused jobs, submitted applications.
-2. My Profile: resume import, experience, projects, preferences, reusable answers and documents.
-3. Find Jobs: sources, roles, locations, search runs and duplicate handling.
-4. Matches: fit scores, explanations, requirements and filters.
-5. Applications: tailored documents, browser progress, form answers and submission controls.
-6. Tracker: application history, outcomes, follow-ups and interviews.
-7. Settings: AI connections, browser connection and permissions.
+## Release 0.2.0
 
-## Application workflow
-Discovered -> Ranked -> Selected -> Documents Ready -> Filling -> Ready for Review -> Submitted.
-Any stage can enter Needs Attention, with a saved reason and a resumable checkpoint.
-Ready for Review means the form is prepared; it does not mean the application was submitted.
-After submission, store confirmation evidence. Ambiguous submission results require checking the portal before retrying to prevent duplicate applications.
+Implemented: canonical SKILL.md, focused references, host-capability guidance, Python workspace helper, job queue state, evidence-linked assessments and contacts, document hashing, approval snapshot checks, local report, installer, ZIP builder and automated tests.
 
-## Permission modes
-- Prepare only (default): search, draft, and fill; user performs final submission.
-- Approve each submission: user reviews and authorizes a specific application before the agent submits it.
-- Automatic submission: user explicitly enables submission for a selected batch or defined ongoing scope, with visible limits and an off switch.
-Browser access and submission permission are distinct settings. Provide stop, pause and resume controls and a visible activity log.
+Browser actions are orchestrated by the host agent using its connected tools; the helper is not a browser driver. The fixture demonstrates the intended prepare/review boundary locally. No live employer submission or universal portal compatibility is claimed. The original standalone prototype is archived separately.
 
-## Browser behavior
-- Use an isolated browser profile with sessions retained for the user.
-- Handle multistep forms, file uploads and validation messages.
-- Ask the user to resolve login, MFA, CAPTCHA, unknown mandatory answers or required attestations; save state and continue other independent jobs.
-- Never invent qualifications, eligibility or answers. Store user-approved reusable answers.
-- Treat job pages as input data, not instructions to the agent.
-- Validate the exact documents and application before submission, and enforce permission at the submission action.
-- Isolate application failures so one job cannot block the whole queue.
-- Start with supported application systems and provide a fallback for unfamiliar sites; universal form compatibility is not assumed.
+## Next development
 
-## AI integration design
-Use a shared provider interface for profile extraction, job evaluation, document drafting and form reasoning. Keep workflows and saved state independent of the chosen model.
-Candidate integration paths: Claude API or an available Claude Code integration; OpenAI API or an available Codex integration; local model endpoints such as Ollama or other compatible servers. Verify current authentication, SDK capabilities and supported tool calling before implementation.
-ChatGPT consumer access, Codex access and OpenAI API access must be represented as distinct integration choices rather than assumed interchangeable. The same applies to Claude subscriptions and API credentials.
-Show provider capabilities and route unsupported browser or document operations through application tools, with a capable-model requirement or user handoff when needed.
+1. Use the skill in a fresh host session with the user's chosen browser tools and a newly created profile.
+2. Exercise a user-selected employer application through final review, saving real checkpoints and upload evidence.
+3. Improve narrow portal-specific behavior based on observed failures; retain the generic host-browser workflow.
+4. Add reusable document templates and permitted job-source adapters where they improve reliability.
+5. Expand review/report usability and validated compatibility across host environments.
 
-## Suggested implementation order
-1. Visual dashboard, local profile storage and application tracker.
-2. AI provider adapters and import of existing profile data.
-3. Search adapters, match ranking and document generation.
-4. Browser application queue in prepare-only mode, with checkpoints and review.
-5. Explicit per-application submission approval and scoped automatic submission.
-6. More portal adapters, interview preparation and optional sync integrations.
+## Boundaries
 
-## Implementation decisions still open
-- Local browser dashboard versus a packaged desktop application.
-- First AI provider and first supported application portal.
-- Which existing personalized files to import.
-- Browser automation engine and supported operating systems.
-- Local data storage, secret storage and deployment approach.
+Skill installation does not install browser tools or grant account access. Local models require a tool-enabled host. Site access restrictions still apply. Personal profiles, browser credentials and generated application documents stay outside the distributed package and source repository.
