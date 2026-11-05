@@ -9,6 +9,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, quote, urlsplit
 from job_search import SearchManager, rankings
+from private_settings import Settings, deliver, send_telegram, telegram_chats
+from toolkit import Workspace
 
 ASSETS = Path(__file__).resolve().parents[1] / 'assets' / 'dashboard'
 STATIC = {'': ('index.html', 'text/html'), 'app.js': ('app.js', 'text/javascript'),
@@ -79,6 +81,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
             if route in STATIC:
                 filename, mime = STATIC[route]
                 return self.respond(200, (ASSETS / filename).read_bytes(), mime + '; charset=utf-8')
+            if route == 'api/settings':
+                return self.respond(200, json.dumps(Settings(server.root).public()), 'application/json')
             if route not in {'api/state', 'api/export', 'api/document'}:
                 return self.respond(404, 'Not found')
             state = read_state(server.root)
@@ -107,29 +111,45 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         server = self.server
-        if self.path != f'/{server.token}/api/search':
-            return self.respond(405, 'Only job discovery can be started from this dashboard.')
+        action = self.path.removeprefix(f'/{server.token}/api/')
+        if self.path not in {f'/{server.token}/api/{a}' for a in ('search','settings','telegram-test','telegram-chats','assistance-retry','assistance-resume')}:
+            return self.respond(405, 'This action is not available from this dashboard.')
         if (self.headers.get('Host') != urlsplit(server.origin).netloc
                 or self.headers.get('Origin') != server.origin
-                or self.headers.get('X-CareerPilot-Request') != 'search'
+                or self.headers.get('X-CareerPilot-Request') != action
                 or self.headers.get('Sec-Fetch-Site') == 'cross-site'):
-            return self.respond(403, 'Search must be started from this dashboard.')
+            return self.respond(403, 'This action must be started from this dashboard.')
         if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
-            return self.respond(415, 'Send a JSON search request.')
+            return self.respond(415, 'Send a JSON request.')
         try:
             size = int(self.headers.get('Content-Length', '0'))
             if not 0 < size <= 4096:
-                return self.respond(413, 'Search request is too large or empty.')
+                return self.respond(413, 'Request is too large or empty.')
             self.connection.settimeout(10)
             query = json.loads(self.rfile.read(size))
-            result = server.search.start(query)
+            if not isinstance(query, dict):
+                raise ValueError('Request must be an object.')
+            if action == 'settings':
+                result = Settings(server.root).save(query)
+            elif action == 'telegram-chats':
+                result = telegram_chats(server.root, query.get('token', ''))
+            elif action == 'telegram-test':
+                send_telegram(server.root, 'CareerPilot test: phone notifications are connected. Open Chrome Remote Desktop when assistance is needed.')
+                result = {'sent': True}
+            elif action == 'assistance-retry':
+                Workspace(server.root).mutate({'op':'assistance-retry', 'request_id':query.get('request_id')})
+                result = deliver(server.root, query.get('request_id'))
+            elif action == 'assistance-resume':
+                result = Workspace(server.root).mutate({'op':'resume', 'job_id':query.get('job_id'), 'note':query.get('note')})
+            else:
+                result = server.search.start(query)
             return self.respond(202, json.dumps(result), 'application/json; charset=utf-8')
         except ValueError as exc:
             return self.respond(400, str(exc))
         except RuntimeError as exc:
             return self.respond(409, str(exc))
         except (OSError, sqlite3.Error):
-            return self.respond(503, 'Could not save the search. Check the workspace and try again.')
+            return self.respond(503, 'Could not complete this action. Check the workspace and try again.')
 
     def unsupported(self):
         self.respond(405, 'This action is not available from the dashboard.')

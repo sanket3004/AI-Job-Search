@@ -2,7 +2,7 @@
 
 Your AI companion from job discovery to application.
 
-An installable **Agent Skill** for a personal job search: fresh profile, job discovery, fit assessments, tailored documents, recruiting contacts, browser applications and tracking. Version 0.5.0.
+An installable **Agent Skill** for a personal job search: fresh profile, job discovery, fit assessments, tailored documents, recruiting contacts, browser applications and tracking. Version 0.6.0.
 
 The AI agent you already use supplies the reasoning and tools. The canonical package is **`skills/careerpilot/`**. It includes `SKILL.md`, focused workflow references, a standard-library Python state helper and Codex display metadata. It has no model API dependency and includes no personal profile.
 
@@ -112,3 +112,16 @@ The ZIP is written to `dist/careerpilot.zip`, containing only the canonical skil
 Workspace backups should include `imports/` to preserve evidence behind reviewed profile changes, along with the database and application artifacts.
 
 Installation references: [Codex skills](https://learn.chatgpt.com/docs/build-skills), [Claude Code skills](https://code.claude.com/docs/en/skills).
+
+
+## Accounts and phone assistance (0.6)
+
+Open **Accounts & alerts** in the dashboard to save default signup details, approve exact career-site origins for login/signup, and securely save existing passwords. New signups can receive unique generated passwords. Windows DPAPI protects the private settings database; secrets are excluded from workspace exports. Non-Windows hosts currently need password-manager autofill/manual assistance.
+
+Configure a Telegram bot in the same screen: create it with @BotFather, send /start to your bot, paste its token locally, select **Find my Telegram chat**, choose your account, enable alerts, save, and send a test. Do not paste secrets into AI chat. Normal low-volume bot alerts require no extra AI calls.
+
+Every agent `pause` creates an **Assistance** request and attempts one phone alert, even if the dashboard is closed. Failed delivery can be retried. Resolve the blocker through your separately configured Chrome Remote Desktop, enter a note, and return the job to the queue. Keep the laptop awake and the application agent running; notifications do not start a background AI session.
+
+Automatic credential filling requires host password-manager support or the optional Playwright bridge connected to an existing authorized local CDP browser. The bridge fills but never submits; the host handles approved login/signup clicks and observed confirmation. MFA, CAPTCHA, unsupported browsers, and host-required confirmations still need assistance. Account permissions do not authorize application submission.
+
+See [full setup and browser compatibility](skills/careerpilot/references/accounts-and-assistance.md). The portable core is standard-library-only; the optional credential bridge requires `python -m pip install playwright` in the Python environment used by the host.

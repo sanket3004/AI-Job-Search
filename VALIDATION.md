@@ -36,3 +36,14 @@ November 5, 2026: 44 tests passed, including all existing workflows plus public-
 An isolated live browser check searched `Data Analyst / Remote` through the dashboard. A seven-day run saved 128 postings, including 79 low-relevance results. A subsequent 24-hour run saved 65 postings using the same cached feeds. Both independently dated lists remained available in Search history. The UI correctly reported partial coverage at the five-page caps for Jobicy and Arbeitnow; Remotive returned ten feed rows, with no role candidates for this query. Posting dates, source fetch times, low-score filtering, newest-first sorting, score explanations, and historical-list reopening were verified in the browser. These counts describe this validation run, not expected future search volume or exhaustive coverage.
 
 The dark desktop interface was visually inspected. No console errors/warnings were reported in the inspected browser view. The live check imported no personal profile and submitted no employer application or outreach. Test data and screenshots remain in ignored local work files.
+
+
+## Release 0.6.0 validation — November 5, 2026
+
+- 51 Python tests passed, including real Windows DPAPI round trips and ciphertext checks, secret omission from exports/API responses, exact-origin rejection, unique signup passwords and revocation, notification failure/retry/deduplication, mocked browser destination checks, cross-origin POST protection, and assistance resume validation.
+- A Windows loopback connection interruption affected one test on an intermediate run; the complete rerun passed.
+- JavaScript syntax and skill quick validation passed.
+- In an isolated local browser workspace, saved synthetic signup defaults and observed the saved confirmation; created a synthetic paused job, observed its failed-delivery status with Telegram unconfigured, and resolved it through the dashboard back to the queue.
+- Telegram network delivery was mocked in automated tests. No real bot token/recipient is configured and no live phone notification was sent.
+- Credential bridge behavior was tested with a simulated page. No real employer login/signup or application submission was performed. Live Playwright/CDP compatibility requires a connected authorized browser and optional dependency.
+- The user’s existing profile, application data and permissions were not imported or changed by validation.

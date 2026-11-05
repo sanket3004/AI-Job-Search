@@ -41,3 +41,6 @@ Source documentation and limits:
 - [Arbeitnow](https://www.arbeitnow.com/blog/job-board-api): Europe-focused feed, one-hour cache and at most five pages per refresh.
 
 These are finite sources, not exhaustive LinkedIn/Indeed or city-wide scraping. Report partial pagination and source errors honestly. Feed failures are cached too, to avoid repeated requests. A published listing is not proof that an employer is still accepting applications; check the page before preparing it. Cache files live under `search-cache/` in the private workspace and may be omitted from backups. Back up the database to retain all historical result lists.
+
+
+Version 0.6 adds Accounts & alerts and Assistance. See [setup and browser handoff](accounts-and-assistance.md). Additional same-origin POST routes save encrypted settings, discover Telegram private chats, send a test, retry a notification, or resume a paused job with a resolution note. They never submit applications. Secret settings are omitted from state exports.

@@ -126,6 +126,28 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(self.get('api/submit','POST',headers=headers,body='{}')[0],405)
         self.assertEqual(self.ws.read()['jobs'],{})
 
+    def test_settings_routes_reject_cross_site_and_redact_secrets(self):
+        payload=json.dumps({'kind':'site','url':'https://careers.example.invalid','username':'fixture','password':'private-fixture-123','allow_login':True,'allow_signup':False})
+        headers={'Content-Type':'application/json','X-CareerPilot-Request':'settings','Origin':self.server.origin}
+        self.assertEqual(self.get('api/settings','POST',body=payload)[0],403)
+        self.assertEqual(self.get('api/settings','POST',headers=dict(headers,Origin='https://evil.invalid'),body=payload)[0],403)
+        status,_,raw=self.get('api/settings','POST',headers=headers,body=payload)
+        self.assertEqual(status,202)
+        for response in [raw,self.get('api/settings')[2],self.get('api/export')[2],self.get('api/state')[2]]:
+            self.assertNotIn(b'private-fixture-123',response)
+        self.assertTrue(json.loads(raw)['sites']['https://careers.example.invalid']['password_saved'])
+        for action in ['telegram-test','telegram-chats','assistance-retry','assistance-resume']:
+            self.assertEqual(self.get('api/'+action,'POST',body='{}')[0],403)
+
+    def test_assistance_resume_route_requires_resolution(self):
+        jid=self.ws.mutate({'op':'job-add','title':'Fixture','company':'Fixture','description':'Test','source':'Test','url':'https://example.invalid/job'})['job_id']
+        self.ws.mutate({'op':'select','job_id':jid})
+        self.ws.mutate({'op':'pause','job_id':jid,'reason':'Manual verification','next_action':'Resolve'})
+        headers={'Content-Type':'application/json','X-CareerPilot-Request':'assistance-resume','Origin':self.server.origin}
+        self.assertEqual(self.get('api/assistance-resume','POST',headers=headers,body=json.dumps({'job_id':jid,'note':''}))[0],400)
+        self.assertEqual(self.get('api/assistance-resume','POST',headers=headers,body=json.dumps({'job_id':jid,'note':'Resolved manually'}))[0],202)
+        self.assertEqual(self.ws.read()['jobs'][jid]['status'],'Preparing')
+
 
 if __name__ == '__main__':
     unittest.main()

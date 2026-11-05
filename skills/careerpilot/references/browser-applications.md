@@ -2,7 +2,7 @@
 
 ## Use the host's browser
 
-Use the connected browser/computer tools the host actually provides. Read their APIs and permission requirements. The skill does not include a browser driver or assume a Playwright/CDP endpoint. If browser tools are missing, explain the specific missing capability, pause affected jobs, and continue document preparation. Do not install a browser extension or change host security settings implicitly.
+Use the connected browser/computer tools the host actually provides. Read their APIs and permission requirements. The core workflow does not assume a browser driver or CDP endpoint. An optional credential-fill bridge is available only for explicitly connected Playwright/CDP sessions. If browser tools are missing, explain the specific missing capability, pause affected jobs, and continue document preparation. Do not install a browser extension or change host security settings implicitly.
 
 Process selected job IDs or a user-authorized queue limit. Get `next` from the helper. A paused job is excluded until explicitly resumed. Each browser action must be grounded in the latest observed page, visible labels and validation messages, not guessed selectors or a stale form map.
 
@@ -36,3 +36,6 @@ After the click, inspect confirmation. Record `submitted` with observed confirma
 - Completion: list ready-for-review, paused, submitted and uncertain separately, with next actions.
 
 The helper coordinates state; only actual browser observations establish form completion or submission. Never manufacture those observations for a demonstration. Use the repository's local test form for simulated evaluations and label them as such.
+
+
+For login/signup, read [Accounts and assistance](accounts-and-assistance.md). Reuse exact-site login/signup permissions saved by the user; use the secure fill bridge or password-manager autofill. Pause for unsupported credential delivery, MFA, CAPTCHA, unknown signup facts, or a new unapproved identity-provider origin. Every `pause` now creates an assistance request and attempts the configured Telegram alert. Do not send a second ad hoc notification. After manual resolution, re-inspect the current browser page before continuing.

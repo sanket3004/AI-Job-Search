@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-VERSION = '0.5.0'
+VERSION = '0.6.0'
 TERMINAL = {'Submitted', 'Interview', 'Rejected', 'Offer', 'Withdrawn', 'Expired'}
 ACTIVE = {'Selected', 'Preparing', 'Filling', 'Ready for review'}
 
@@ -98,6 +98,12 @@ class Workspace:
             state['events'].append({'at': utc(), 'op': request['op'], 'job_id': request.get('job_id'), 'result': result})
             db.execute('UPDATE state SET value=? WHERE id=1', (json.dumps(state, ensure_ascii=False),))
             db.commit()
+            if request.get('op') == 'pause' and result.get('request_id'):
+                from private_settings import deliver
+                try:
+                    result['notification'] = deliver(self.root, result['request_id']).get('delivery', 'pending')
+                except (ValueError, OSError, sqlite3.Error):
+                    result['notification'] = 'pending'
             return result
         except Exception:
             db.rollback()
@@ -116,6 +122,27 @@ class Workspace:
 
     def apply(self, state, data):
         op = text(data.get('op'), 'op')
+        if op in {'assistance-claim', 'assistance-delivery', 'assistance-retry'}:
+            item = state.get('assistance', {}).get(data.get('request_id'))
+            require(item is not None, 'Unknown assistance request')
+            if op == 'assistance-claim':
+                if item['status'] != 'open' or item['delivery'] != 'pending':
+                    return {'claimed': False}
+                item['delivery'] = 'sending'
+                item['attempted_at'] = utc()
+                return {'claimed': True, 'job_id': item['job_id']}
+            if op == 'assistance-retry':
+                require(item['status'] == 'open', 'Request is already resolved')
+                require(item['delivery'] != 'sent', 'Notification was already sent')
+                if item['delivery'] == 'sending':
+                    age = datetime.now(timezone.utc) - datetime.fromisoformat(item['attempted_at'])
+                    require(age.total_seconds() > 60, 'Delivery is still in progress')
+                item['delivery'] = 'pending'
+            else:
+                require(item['delivery'] == 'sending' and data.get('delivery') in {'sent','failed'}, 'No pending delivery')
+                item['delivery'] = data['delivery']
+                item['error'] = data.get('error', '')
+            return {'request_id': item['id'], 'delivery': item['delivery']}
         if op == 'search-start':
             role, location = text(data.get('role'), 'role'), text(data.get('location'), 'location')
             require(len(role) <= 120 and len(location) <= 120, 'Search fields exceed 120 characters')
@@ -290,11 +317,20 @@ class Workspace:
             job['blocker'] = text(data.get('reason'), 'pause reason')
             job['next_action'] = text(data.get('next_action'), 'next action')
             job['status'] = 'Needs attention'
+            rid = uuid.uuid4().hex[:12]
+            state.setdefault('assistance', {})[rid] = {'id': rid, 'job_id': jid, 'status': 'open',
+                'created_at': utc(), 'reason': job['blocker'], 'next_action': job['next_action'],
+                'delivery': 'pending', 'error': ''}
+            job['assistance_id'] = rid
         elif op == 'resume':
             require(old_status == 'Needs attention', 'Job is not paused')
             job['notes'].append({'at': utc(), 'text': text(data.get('note'), 'resolution note')})
             job['status'] = 'Preparing'
             job['blocker'] = ''
+            for item in state.get('assistance', {}).values():
+                if item['job_id'] == jid and item['status'] == 'open':
+                    item['status'] = 'resolved'
+                    item['resolved_at'] = utc()
             job['review'] = None
         elif op == 'ready':
             require(old_status == 'Filling', 'Job must be filled before review')
@@ -357,7 +393,7 @@ class Workspace:
         else:
             raise ValueError(f'Unknown operation: {op}')
         job['updated_at'] = utc()
-        return {'job_id': jid, 'status': job['status']}
+        return dict({'job_id': jid, 'status': job['status']}, **({'request_id': job['assistance_id']} if op == 'pause' else {}))
 
     def report(self):
         state = self.read()
@@ -383,7 +419,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--workspace', required=True, type=Path)
     sub = parser.add_subparsers(dest='command', required=True)
-    for name in ['init', 'status', 'next', 'report', 'export']:
+    for name in ['init', 'status', 'next', 'report', 'export', 'accounts']:
         sub.add_parser(name)
     dashboard = sub.add_parser('dashboard', help='Serve the live local read-only dashboard')
     dashboard.add_argument('--port', type=int, default=8765)
@@ -404,6 +440,10 @@ def main():
         elif args.command == 'run':
             payload = sys.stdin.read() if args.input == '-' else Path(args.input).read_text(encoding='utf-8-sig')
             result = ws.mutate(json.loads(payload))
+        elif args.command == 'accounts':
+            ws.read()
+            from private_settings import Settings
+            result = Settings(ws.root).public()
         elif args.command == 'report':
             result = ws.report()
         else:

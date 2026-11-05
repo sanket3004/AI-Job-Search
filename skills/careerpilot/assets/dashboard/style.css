@@ -334,3 +334,5 @@ textarea{background:#0d1015;color:#d6dfeb;border-color:#384555}
 .search-heading{margin-bottom:22px}
 .search-hub{padding-top:26px}
 .search-heading h1{font-size:34px}
+
+.settings-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;padding:12px 0}.settings-field{display:flex;flex-direction:column;gap:8px;color:var(--muted)}.settings-field input{width:100%;box-sizing:border-box}.settings-field input[type=checkbox]{width:20px;height:20px}.settings-form button{align-self:end}.settings-form p{grid-column:1/-1}

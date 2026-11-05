@@ -2,7 +2,7 @@
 let state = null, workspace = '', view = 'overview', selectedJob = null, lastPayload = '', busy = false;
 let filter = 'All statuses', search = '', sort = 'relevance', band = 'All scores';
 let rankData = {}, activeSearch = null, selectedSearch = 'latest', searchPending = false, formSeeded = false;
-const titles = {overview: 'Overview', jobs: 'Job pipeline', profile: 'My profile', documents: 'Documents', contacts: 'Contacts & drafts', activity: 'Activity', history: 'Search history'};
+const titles = {settings:'Accounts & alerts', assistance:'Assistance',overview: 'Overview', jobs: 'Job pipeline', profile: 'My profile', documents: 'Documents', contacts: 'Contacts & drafts', activity: 'Activity', history: 'Search history'};
 const $ = id => document.getElementById(id);
 const jobs = () => Object.values(state?.jobs || {});
 const label = value => String(value).replaceAll('_', ' ').replaceAll('-', ' ').replace(/^./, c => c.toUpperCase());
@@ -152,11 +152,11 @@ function renderJob() {
   const description=el('details');add(description,el('summary','','Full saved job description'),el('p','prose',j.description));add(root,description);
 }
 function openJob(id){selectedJob=id;renderJob();if(!$('detail').open)$('detail').showModal();}
-function render(){if(!state)return;const root=$('content');root.replaceChildren();({overview,jobs:jobList,profile:profilePage,documents:documentsPage,contacts:contactsPage,activity:activityPage,history:historyPage})[view](root);if($('detail').open)renderJob();}
+function render(){if(!state)return;const root=$('content');root.replaceChildren();({overview,jobs:jobList,profile:profilePage,documents:documentsPage,contacts:contactsPage,activity:activityPage,history:historyPage,settings:settingsPage,assistance:assistancePage})[view](root);if($('detail').open)renderJob();}
 async function refresh(){
   if(busy)return;busy=true;
   try{const response=await fetch('api/state',{cache:'no-store'});if(!response.ok)throw new Error('Workspace unavailable');const payload=await response.json();const signature=JSON.stringify(payload);state=payload.state;workspace=payload.workspace;rankData=payload.rankings||{};activeSearch=payload.active_search||null;updateSearchStatus();if(!formSeeded){const last=runs().at(-1);$('role-input').value=last?.role||state.profile.target_roles?.[0]||'';$('location-input').value=last?.location||state.profile.location||'';$('posted-input').value=last?.posted_within||'any';$('unknown-dates').checked=last?.include_unknown_dates||false;formSeeded=true;}$('workspace').textContent=workspace;
-    if(signature!==lastPayload){lastPayload=signature;const active=document.activeElement;const isSearch=active?.type==='search';const caret=isSearch?active.selectionStart:null;render();if(isSearch){const input=document.querySelector('input[type="search"]');input?.focus();if(input&&caret!==null)input.setSelectionRange(caret,caret);}}
+    if(signature!==lastPayload && view!=='settings'){lastPayload=signature;const active=document.activeElement;const isSearch=active?.type==='search';const caret=isSearch?active.selectionStart:null;render();if(isSearch){const input=document.querySelector('input[type="search"]');input?.focus();if(input&&caret!==null)input.setSelectionRange(caret,caret);}}
     $('sync').textContent=`Synced ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;$('error').hidden=true;
   }catch{ $('sync').textContent='Disconnected';$('error').hidden=false;$('error').textContent=state?'Connection lost. You are viewing the last successful snapshot. Restart the dashboard or refresh when the workspace is available.':'Cannot load this workspace. Check that the dashboard server is still running, then refresh.';}finally{busy=false;}
 }
@@ -166,3 +166,58 @@ $('job-search-form').addEventListener('submit',startSearch);
 $('refresh').addEventListener('click',refresh);$('close-detail').addEventListener('click',()=>$('detail').close());$('close-prompt').addEventListener('click',()=>$('prompt-dialog').close());
 $('copy-prompt').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('prompt-text').value);$('copy-status').textContent='Copied. Paste it into your AI chat.';}catch{$('prompt-text').focus();$('prompt-text').select();$('copy-status').textContent='Select and copy the request above, then paste it into your AI chat.';}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});setInterval(()=>{if(!document.hidden)refresh();},5000);refresh();
+
+async function localAction(action, data) {
+  const response=await fetch('api/'+action,{method:'POST',headers:{'Content-Type':'application/json','X-CareerPilot-Request':action},body:JSON.stringify(data)});
+  if(!response.ok)throw new Error(await response.text());
+  return response.json();
+}
+function settingField(form, name, title, value='', type='text') {
+  const wrap=el('label','settings-field',title), input=el('input');input.name=name;input.type=type;
+  if(type==='checkbox')input.checked=Boolean(value);else input.value=value;
+  input.autocomplete=type==='password'?'new-password':'off';
+  add(form,add(wrap,input));return input;
+}
+function settingsForm(root, title, kind, fields, description) {
+  const p=panel(title), f=el('form','settings-form');add(p,el('p','muted',description));
+  fields.forEach(args=>settingField(f,...args));
+  const submit=el('button','primary','Save settings');submit.type='submit';const status=el('p');status.setAttribute('role','status');add(f,submit,status);
+  f.addEventListener('submit',async event=>{event.preventDefault();submit.disabled=true;const data={kind};
+    f.querySelectorAll('input').forEach(i=>data[i.name]=i.type==='checkbox'?i.checked:i.value);
+    try{await localAction('settings',data);f.querySelectorAll('input[type=password]').forEach(i=>i.value='');status.textContent='Saved securely. Reload settings to see the updated site list.';}catch(e){status.textContent=e.message;}finally{submit.disabled=false;}
+  });add(root,add(p,f));return p;
+}
+async function settingsPage(root) {
+  add(root,heading('Accounts & phone alerts','Reusable signup details, site permissions, and Telegram delivery.'));
+  try {
+    const response=await fetch('api/settings',{cache:'no-store'});if(!response.ok)throw new Error('Could not unlock settings for this computer user.');
+    const data=await response.json();if(view!=='settings'||!root.isConnected)return;
+    if(!data.supported){add(root,el('p','warning-text','Secure settings require Windows. On other systems use browser password-manager autofill.'));return;}
+    settingsForm(root,'Default signup details','signup',[
+      ['first_name','First name',data.signup.first_name],['last_name','Last name',data.signup.last_name],['email','Account email',data.signup.email,'email'],['phone','Phone',data.signup.phone],['city','City',data.signup.city],['country','Country',data.signup.country]
+    ],'Saved separately from your confirmed resume profile. Passwords are unique per career site.');
+    settingsForm(root,'Approve or update a career site','site',[
+      ['url','Exact career-site URL (https://…)'],['username','Login email / username (blank uses default email)'],['password','Password (blank keeps saved password; new signup generates one)','','password'],['allow_login','Allow the agent to log in',false,'checkbox'],['allow_signup','Allow the agent to create an account',false,'checkbox']
+    ],'Permissions apply only to this exact HTTPS origin, including its subdomain. Saving replaces its permissions. Account creation does not authorize job submission.');
+    const sites=panel('Approved sites');Object.entries(data.sites).forEach(([origin,site])=>add(sites,add(el('div','row'),add(el('div'),el('strong','',origin),el('p','muted',`${site.username||'Default email'} · Login ${site.allow_login?'allowed':'off'} · Signup ${site.allow_signup?'allowed':'off'} · Password ${site.password_saved?'saved':'not saved'}`)),button('Remove',async()=>{try{await localAction('settings',{kind:'remove-site',url:origin});render();}catch(e){alert(e.message);}}))));add(root,sites);
+    const telegram=settingsForm(root,'Telegram phone notifications','telegram',[
+      ['token','Bot token (blank keeps saved token)','','password'],['chat_id','Your private Telegram chat ID',data.telegram.chat_id],['enabled','Enable phone alerts',data.telegram.enabled,'checkbox']
+    ],'In Telegram, create a bot with @BotFather (/newbot), then open your bot and send /start. Paste its token here, never in an AI chat. Use Find my Telegram chat below and select your own account. Only request and job IDs are sent; details remain on your laptop.');
+    const pairing=el('div');add(telegram,button('Find my Telegram chat',async()=>{pairing.textContent='Looking for your /start message…';try{const result=await localAction('telegram-chats',{token:telegram.querySelector('[name=token]').value});pairing.replaceChildren();if(!result.chats.length)pairing.textContent='Send /start to your bot in Telegram, then try again.';result.chats.forEach(chat=>add(pairing,button(`Use ${chat.name} ${chat.username?'@'+chat.username:''} (${chat.id})`,()=>{telegram.querySelector('[name=chat_id]').value=chat.id;pairing.textContent='Chat selected. Enable alerts and Save settings.';})));}catch(e){pairing.textContent=e.message;}}),pairing);
+    const testStatus=el('p');testStatus.setAttribute('role','status');add(telegram,button('Send test to my phone',async()=>{testStatus.textContent='Sending…';try{await localAction('telegram-test',{});testStatus.textContent='Telegram accepted the test. Check your phone.';}catch(e){testStatus.textContent=e.message;}}),testStatus);
+    add(root,el('p','muted','Keep the laptop awake, online, and the application agent running. Chrome Remote Desktop must be set up separately. Alerts do not start or resume an AI session. Existing failed alerts can be retried from Assistance.'),button('Reload saved settings',()=>render()));
+  }catch(e){add(root,el('p','warning-text',e.message));}
+}
+function assistancePage(root) {
+  add(root,heading('A little help, then onward.','Resolve the blocker through Chrome Remote Desktop, then return the job to the queue.'));
+  const items=Object.values(state.assistance||{}).reverse();
+  if(!items.length)add(root,empty('No assistance requests','Blocked applications will appear here, with phone delivery status.'));
+  items.forEach(item=>{const j=state.jobs[item.job_id],p=panel(j?`${j.title} · ${j.company}`:item.job_id,`${date(item.created_at)} · ${item.status}`);
+    add(p,el('small','',`Request ${item.id} · Phone alert: ${item.delivery}`),el('p','prose',item.reason),el('p','muted',item.next_action),el('p','warning-text',item.status==='open'?(item.error||''):''));
+    if(item.status==='open'){
+      if(item.delivery!=='sent')add(p,button('Retry notification',async()=>{try{await localAction('assistance-retry',{request_id:item.id});await refresh();}catch(e){alert(e.message);}}));
+      const note=el('input');note.placeholder='What did you resolve?';note.setAttribute('aria-label','Resolution note');
+      add(p,note,button('Resolved — return to queue',async()=>{if(!note.value.trim()){note.focus();return;}try{await localAction('assistance-resume',{job_id:item.job_id,note:note.value});await refresh();}catch(e){alert(e.message);}},'primary'),ask('Continue with AI',`Inspect job ${item.job_id} and continue it after the blocker has been resolved.`,'quiet'));
+    }add(root,p);
+  });
+}

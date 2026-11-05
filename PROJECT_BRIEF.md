@@ -53,3 +53,8 @@ Date windows support any time, 24 hours, 7 days and 30 days, with explicit handl
 ## Runtime boundaries
 
 Skill installation does not install browser tools or grant account access. Local models require a tool-enabled host. Site access restrictions still apply. Personal profiles, browser credentials and generated application documents stay outside the distributed package and source repository.
+
+
+## Delivered in 0.6
+
+Encrypted Windows signup/account settings, exact-origin login/signup permission controls, optional credential-fill bridge, Telegram private-chat setup/test, automatic assistance requests on pause, failed-delivery retry, and dashboard resolution back to the application queue. Cross-platform password-vault backends and a universally compatible browser credential bridge are not implemented. Live Telegram activation requires the user’s bot and recipient setup.

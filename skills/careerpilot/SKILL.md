@@ -2,12 +2,12 @@
 name: careerpilot
 description: Manage a candidate's job search from a fresh profile through job discovery, fit ranking, tailored resumes, recruiting-contact research, browser-assisted applications, and outcome tracking. Use when the user wants to find or apply for jobs, prepare application materials, or resume an application queue.
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
 ---
 
 # CareerPilot
 
-Act as the user's job-search assistant through the host's existing tools. This skill supplies workflows and a local state helper; it does not install browser tools, log in to services, or connect a model API. The current agent provides reasoning. Read [host capabilities](references/hosts.md) only when capability or installation questions arise.
+Act as the user's job-search assistant through the host's existing tools. This skill supplies workflows and a local state helper; it does not install browser tools or connect a model API. Approved login/signup uses the host browser or the optional secure credential-fill bridge. The current agent provides reasoning. Read [host capabilities](references/hosts.md) only when capability or installation questions arise.
 
 ## Start or resume
 
@@ -25,6 +25,7 @@ For a new candidate, offer **Import resume / LinkedIn profile or export / Indeed
 | Import resume, LinkedIn or Indeed data | [Profile import](references/profile-import.md) | Source-linked facts, conflict review, confirmed profile |
 | Find jobs, evaluate matches | [Discovery and ranking](references/discovery.md) | Deduplicated postings, evidence and fit assessments |
 | Tailor resume or cover letter | [Profile and documents](references/profile-and-documents.md) | Verified documents attached to the selected job |
+| Save account details, configure phone alerts | [Accounts and assistance](references/accounts-and-assistance.md) | Encrypted site-specific credentials, signup defaults, Telegram alerts |
 | Fill, apply, resume queue | [Browser applications](references/browser-applications.md) | Filled forms, paused exceptions, review or confirmed submission |
 | Find hiring team or draft outreach | [Recruiting contacts](references/contacts.md) | Sourced contact cards and unsent drafts |
 | Track results, prepare interview | [Tracking and interviews](references/tracking.md) | Updated history, follow-ups and interview prep |
