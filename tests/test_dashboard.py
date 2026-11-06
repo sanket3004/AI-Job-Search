@@ -158,6 +158,18 @@ class DashboardTests(unittest.TestCase):
             self.assertEqual(self.get('api/'+route,'POST',headers=headers,body='{}')[0],405)
         self.assertEqual(self.get('api/email-apply','POST',body='{}')[0],403)
 
+    def test_primary_portal_request_waits_for_agent_not_public_feeds(self):
+        headers={'Content-Type':'application/json','X-CareerPilot-Request':'portal-search','Origin':self.server.origin}
+        data=json.dumps({'role':'Data Analyst','location':'Toronto','posted_within':'7'})
+        self.assertEqual(self.get('api/portal-search','POST',body=data)[0],403)
+        status,_,raw=self.get('api/portal-search','POST',headers=headers,body=data)
+        self.assertEqual(status,202)
+        run=self.ws.read()['searches'][json.loads(raw)['search_id']]
+        self.assertEqual(run['status'],'awaiting_agent')
+        self.assertEqual(run['required_sources'],['LinkedIn','Indeed'])
+        self.assertTrue(run['external_only'])
+        self.assertIsNone(self.server.search.thread)
+
 
 if __name__ == '__main__':
     unittest.main()

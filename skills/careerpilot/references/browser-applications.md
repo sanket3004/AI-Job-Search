@@ -8,7 +8,7 @@ Process selected job IDs or a user-authorized queue limit. Get `next` from the h
 
 ## Per-job loop
 
-1. `start` the selected job. Open its application URL; inspect the page and destination employer. When redirected, check the employer/role still match. Stop if the destination is unrelated or unsupported.
+1. Before starting a newly selected LinkedIn/Indeed job, recheck its application route under [primary portal policy](portal-search.md). Exclude Easy Apply, Indeed-hosted or unverified routes, including older saved listings. Then `start` the selected eligible job. Open its application URL; inspect the page and destination employer. When redirected, check the employer/role still match. Stop if the destination is unrelated or unsupported.
 2. If login, MFA or CAPTCHA requires the user, record the current page, a clear blocker and next action; `pause` this job. Follow host rules for handoff. Continue another independent job when possible.
 3. Inspect required fields, page steps, uploads, and the final submit control. Map each answer to an exact profile fact, user-approved reusable answer, or verified document. Do not guess missing eligibility, employment dates, compensation, legal attestations, demographic answers or consent choices.
 4. Fill known fields and upload only the registered job-specific documents. Store a `checkpoint` after each page and validation pass: observed URL, step, answered fields with their source, unresolved required questions, and a short description of what was observed. Do not persist credentials or tokens from URLs; redact sensitive query parameters.

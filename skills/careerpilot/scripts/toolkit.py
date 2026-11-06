@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-VERSION = '0.7.0'
+VERSION = '0.8.0'
 TERMINAL = {'Submitted', 'Interview', 'Rejected', 'Offer', 'Withdrawn', 'Expired'}
 ACTIVE = {'Selected', 'Preparing', 'Filling', 'Ready for review'}
 
@@ -122,6 +122,9 @@ class Workspace:
 
     def apply(self, state, data):
         op = text(data.get('op'), 'op')
+        if op.startswith('portal-'):
+            from portal_search import apply
+            return apply(self, state, data)
         if op.startswith('email-'):
             from email_tracking import apply
             return apply(state, data)
@@ -160,6 +163,7 @@ class Workspace:
         if op in {'search-results', 'search-finish'}:
             run = state.get('searches', {}).get(data.get('search_id'))
             require(run is not None and run['status'] == 'running', 'Unknown or finished search')
+            require(run.get('kind') != 'primary-portals', 'Use portal search operations for LinkedIn/Indeed lists.')
             if op == 'search-results':
                 require(isinstance(data.get('jobs'), list) and isinstance(data.get('coverage'), dict), 'Invalid search results')
                 for candidate in data['jobs']:

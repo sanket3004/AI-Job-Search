@@ -23,13 +23,13 @@ Views:
 
 Data refreshes every five seconds while the tab is visible. Connection failures clearly label the last snapshot as stale. A saved `Filling` status is not proof that an agent is currently running. Checkpoints do not restore website sessions. Submission permissions shown are historical records, not a fresh validity check.
 
-The Search jobs form starts a background public-feed fetch and saves discovery results through the state helper. It never edits profiles, advances application states, authorizes submission, starts AI agents, or sends messages. "Continue with AI" and similar buttons show copyable requests for the user's agent chat. Help the user act on those requests using the existing skill workflows and authorization requirements. Downloaded JSON is a state export, not a complete backup of artifact files.
+The default search creates a required LinkedIn + Indeed request and a copyable prompt for the connected agent. Explicit supplementary mode starts a background public-feed fetch and saves discovery results through the state helper. It never edits profiles, advances application states, authorizes submission, starts AI agents, or sends messages. "Continue with AI" and similar buttons show copyable requests for the user's agent chat. Help the user act on those requests using the existing skill workflows and authorization requirements. Downloaded JSON is a state export, not a complete backup of artifact files.
 
 For a portable, static snapshot without a running server, keep using `report`. Its generated HTML is separate from the live dashboard.
 
 ## Direct search, dates and ranking
 
-Enter role, location, and a posting window (any/24 hours/7 days/30 days) in the dashboard. The Search jobs button contacts public Remotive, Jobicy and Arbeitnow JSON feeds; no model/API key is used and no profile is transmitted. It records results in `searches`, including a separate listing snapshot for each run. URLs deduplicate canonical job records; rediscovery does not overwrite application states, documents, or reviewed facts. Search history lists every run by local date/time. A run interrupted by a server shutdown remains visible and is labeled interrupted; start a new run to retry.
+Enter role, location, and a posting window (any/24 hours/7 days/30 days) in the dashboard. In supplementary mode, the search button contacts public Remotive, Jobicy and Arbeitnow JSON feeds; no model/API key is used and no profile is transmitted. It records results in `searches`, including a separate listing snapshot for each run. URLs deduplicate canonical job records; rediscovery does not overwrite application states, documents, or reviewed facts. Search history lists every run by local date/time. A run interrupted by a server shutdown remains visible and is labeled interrupted; start a new run to retry.
 
 Retain all role candidates in the chosen date window, including low-scoring or geographically mismatched jobs. The dashboard labels relevance as a heuristic: title-word overlap (45), description-word overlap (15), and location text (40). Do not call this an AI assessment or infer eligibility. AI `evaluation` records stay separate. Each historical list retains the scores and posting data collected for that run.
 
@@ -47,3 +47,6 @@ Version 0.6 adds Accounts & alerts and Assistance. See [setup and browser handof
 
 
 Version 0.7 adds Email updates. Its local same-origin POST routes email-config, email-apply and email-dismiss manage scope and review records; no mail-reading or sending API is exposed. Check Gmail with AI generates a prompt for the connected host. See [Gmail review](email-review.md) for setup and status meanings.
+
+
+Version 0.8 defaults to LinkedIn + Indeed required primary portal searches. The same-origin POST portal-search saves an awaiting-agent request and opens a copyable host prompt. Primary lists include only verified employer/ATS applications and record exclusion reasons and each required source outcome. Search mode explicitly distinguishes supplementary public feeds. Existing historical lists remain available and are not retroactively certified. See [primary portal workflow](portal-search.md).

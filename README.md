@@ -2,7 +2,7 @@
 
 Your AI companion from job discovery to application.
 
-An installable **Agent Skill** for a personal job search: fresh profile, job discovery, fit assessments, tailored documents, recruiting contacts, browser applications and tracking. Version 0.7.0.
+An installable **Agent Skill** for a personal job search: fresh profile, job discovery, fit assessments, tailored documents, recruiting contacts, browser applications and tracking. Version 0.8.0.
 
 The AI agent you already use supplies the reasoning and tools. The canonical package is **`skills/careerpilot/`**. It includes `SKILL.md`, focused workflow references, a standard-library Python state helper and Codex display metadata. It has no model API dependency and includes no personal profile.
 
@@ -51,9 +51,11 @@ The host AI performs web research, document authoring and browser actions throug
 
 ## Search from the dashboard
 
-Enter a **job role**, **location** (city/country or Remote), and **posting-date range** (any time, 24 hours, 7 days, or 30 days), then click **Search jobs**. The search runs locally without an AI session, API key, or Firecrawl credits. No profile is required to see results. Every role candidate within the date range is saved, including low relevance and location mismatches. Sort by relevance or newest posting; use the score filter to inspect low matches. The numeric rank is relative to the selected list and remains stable when filtering it.
+Enter a **job role**, **location**, and **posting-date range**. The default **LinkedIn + Indeed** mode saves a primary search request and opens a prompt to run with your connected AI/browser. Both portals are required. Only verified employer/ATS application routes enter the ranked list; LinkedIn Easy Apply and Indeed on-platform applications are excluded. Unknown routes remain excluded until verified. All eligible scores, including low matches, stay visible. Blocked source access is recorded honestly.
 
-Sources are [Remotive](https://remotive.com/remote-jobs/api), [Jobicy](https://github.com/Jobicy/remote-jobs-api), and [Arbeitnow](https://www.arbeitnow.com/blog/job-board-api), via their public JSON feeds. Remotive/Jobicy focus on remote jobs; Arbeitnow covers Europe, primarily Germany. This dashboard search does **not** scrape LinkedIn or Indeed. The host AI's separate discovery workflow can use other permitted sources.
+The explicitly selected **Supplementary public feeds** mode runs locally without an AI session or API key. It keeps all role candidates within the date range, but does not satisfy the required primary-source coverage or verify external-application eligibility.
+
+Supplementary sources are [Remotive](https://remotive.com/remote-jobs/api), [Jobicy](https://github.com/Jobicy/remote-jobs-api), and [Arbeitnow](https://www.arbeitnow.com/blog/job-board-api), via their public JSON feeds. Remotive/Jobicy focus on remote jobs; Arbeitnow covers Europe, primarily Germany. This dashboard search does **not** scrape LinkedIn or Indeed. The host AI performs the required LinkedIn/Indeed search through permitted tools; no direct portal scraper is bundled.
 
 Remotive is cached for six hours and its public jobs are delayed by 24 hours. Jobicy covers the last seven days. Jobicy and Arbeitnow are cached for one hour; each refresh stops after five pages and reports incomplete coverage when more pages exist. Source errors, invalid rows, date-filter exclusions and fetch timestamps are visible in each list. Repeating a search creates a new list but may use the same cached feed data. There is no claim of exhaustive regional coverage.
 
@@ -83,7 +85,7 @@ python "SKILL_DIR/scripts/toolkit.py" --workspace "WORKSPACE" dashboard --open
 
 Initialize a new workspace with `init` first. The dashboard refreshes every five seconds while visible, uses a per-session local URL, and binds only to this computer. Use `--port 0` if the default port 8765 is occupied. No extra packages, hosting, or model API are required.
 
-The dashboard runs public-feed searches and saves results through the canonical state helper. It also provides copyable requests for your AI chat. It does not run an AI agent, import profiles, grant permissions, or submit applications. Documents download only if they still match their registered content. Export data downloads state JSON; include workspace artifacts and imports separately for a full backup.
+The dashboard defaults to required LinkedIn/Indeed search requests; optional supplementary feed searches run locally. Both use the canonical state helper. It also provides copyable requests for your AI chat. It does not run an AI agent, import profiles, grant permissions, or submit applications. Documents download only if they still match their registered content. Export data downloads state JSON; include workspace artifacts and imports separately for a full backup.
 
 Ask in ordinary language. The skill offers a short task menu when useful and returns job tables, clear next actions and a read-only HTML report. All browser filling ends at review by default. Specific submission approval or a scoped automatic batch can be recorded when authorized, subject to the host's permission requirements. Contact outreach has separate authorization.
 
@@ -136,3 +138,10 @@ Connect Gmail through your AI host, enter the intended mailbox in the dashboard,
 The agent matches messages to exact saved applications, records minimal evidence, and imports through transactional state commands. Repeated message IDs are deduplicated; older, regressive, ambiguous and conflicting outcomes are held for review. An uncertain submission must be reconciled before applying an email outcome. “Approved for another round” is not treated as an employment offer.
 
 See [Gmail review agent](skills/careerpilot/references/email-review.md). Scheduled checks require a separately configured host scheduler; no schedule is installed automatically. Gmail access remains inactive until the user configures and authorizes the account.
+
+
+## Required portals and application filter (0.8)
+
+LinkedIn and Indeed are now the primary required sources. Exclude Easy Apply, Indeed Apply / Apply with Indeed / Easily apply, and mixed listings that also offer an on-platform route. Import only recently verified external employer/ATS applications, preserving the original portal link, employer destination, posting date and verification evidence. Both portal outcomes must be recorded before a run can finish. A blocked portal yields partial/failed coverage, not a silent public-feed fallback.
+
+Primary requests run through the host AI/browser after copying the dashboard prompt. The dashboard does not independently scrape these portals or start an agent. Historical saved jobs are retained and are not retroactively verified; recheck their routes before applying. See [primary portal workflow](skills/careerpilot/references/portal-search.md).

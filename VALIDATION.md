@@ -56,3 +56,12 @@ The dark desktop interface was visually inspected. No console errors/warnings we
 - Browser smoke test used an isolated synthetic workspace: opened Email updates, reviewed a demo interview invitation, applied it with a review note, and observed Submitted → Interview, pending → applied, and the review count decrease to zero.
 - No live Gmail profile, messages or attachments were accessed; no mail was sent or modified. End-to-end mailbox retrieval awaits the user's configured account and connected host Gmail tools.
 - No recurring task was created. The dashboard's Check Gmail with AI action generates a host-agent prompt and does not independently run an agent.
+
+
+## Release 0.8.0 validation — November 6, 2026
+
+- 66 Python tests passed, including six primary-portal behavior tests and an HTTP test for the new same-origin request endpoint. Covered excluded on-platform/unknown/mixed routes, destination origin checks, recent verification, date filtering, low-score retention, required coverage from both portals, blocked-source partial results, duplicate source citations and rejection of generic search-operation bypasses.
+- JavaScript syntax and skill frontmatter validation passed.
+- Isolated browser check verified LinkedIn + Indeed as the default source mode, saved a Data Analyst/Toronto request and observed the host-agent prompt with required sources and external-only exclusions. No public-feed worker started for this primary request.
+- No live LinkedIn/Indeed job search, login or employer application was performed. Retrieval is a host workflow, and source access/coverage remain dependent on the user's permitted connected tools.
+- Existing user profiles, resume documents, job/application records and historical searches were not modified by the release tests.

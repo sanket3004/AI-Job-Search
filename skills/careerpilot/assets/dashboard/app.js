@@ -68,14 +68,19 @@ function postedCell(job) {
   add(p,el('span','',new Date(raw).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'})),el('small','',days===0?'Within 24 hours':days===1?'1 day ago':`${days} days ago`));p.title=fullDate(raw);return p;
 }
 function period(run) { return ({any:'Any posting date','1':'Last 24 hours','7':'Last 7 days','30':'Last 30 days'})[run.posted_within] || 'Any posting date'; }
-function runStatus(run) { return run.status === 'running' && activeSearch !== run.id ? 'Interrupted' : label(run.status); }
+function runStatus(run) { return run.status === 'running' && run.kind !== 'primary-portals' && activeSearch !== run.id ? 'Interrupted' : label(run.status); }
 function searchOverview(root, run) {
   if(!run) return;
   const p=el('section','run-summary');
   add(p,add(el('div'),el('h2','',`${run.role} · ${run.location}`),el('p','muted',`${period(run)} · Search started ${fullDate(run.created_at)} · ${runStatus(run)}`)),el('span','pill',`${run.job_ids.length} results`));
   if(run.error)add(p,el('p','warning-text',run.error));
+  if(run.kind==='primary-portals'){
+    add(p,el('p','muted',`Required sources: LinkedIn + Indeed · Verified external applications only · ${run.exclusions?.length||0} observations excluded or unverified.`));
+    if(['awaiting_agent','running'].includes(run.status))add(p,ask('Continue primary search with AI',portalPrompt(run.id)));
+    if(run.exclusions?.length){const excluded=el('details');add(excluded,el('summary','','Excluded / unverified observations'));run.exclusions.forEach(e=>add(excluded,add(el('p'),external(e.source,e.source_url),el('span','',` — ${e.reason}`))));add(p,excluded);}
+  }else add(p,el('p','warning-text','Supplementary / historical list: LinkedIn + Indeed coverage and external-only eligibility are not verified.'));
   const details=el('details','coverage');add(details,el('summary','','Source fetch times & coverage'));
-  run.coverage.forEach(c=>add(details,add(el('div','coverage-row'),el('strong','',c.source),el('span','',`${c.results ?? 0} results · ${c.count} feed listings · Fetched ${fullDate(c.fetched_at)}${c.cached?' · Cached':''}`),el('small','',`${c.scope} ${c.date_excluded||0} role candidates excluded by the posting-date filter. ${c.skipped||0} invalid/expired rows skipped.`),c.warning?el('p','warning-text',c.warning):null)));
+  run.coverage.forEach(c=>add(details,add(el('div','coverage-row'),el('strong','',c.source),el('span','',`${c.results ?? 0} results · ${c.count} observations · Fetched ${fullDate(c.fetched_at)}${c.cached?' · Cached':''}`),el('small','',`${c.scope} ${c.date_excluded||0} role candidates excluded by the posting-date filter. ${c.skipped||0} invalid/expired rows skipped.`),c.warning?el('p','warning-text',c.warning):null)));
   if(!run.coverage.length)add(details,el('p','muted',activeSearch===run.id?'Fetching public sources…':'No source results were saved.'));
   add(p,details);add(root,p);
 }
@@ -97,7 +102,7 @@ function jobList(root) {
     add(results,el('div','count-label',`${list.length} of ${all.length} postings · ${all.filter(j=>scoreFor(j).band==='Low').length} low matches in this list · No minimum-score cutoff.`),el('p','ranking-note','Relevance is an automatic word-and-location comparison, not an AI assessment of your qualifications. Open a job to see the breakdown.'));
     if(!list.length)return add(results,empty('No postings in this view.',all.length?'Clear your filters to show every result.':'Try a broader role or date range. Check source coverage above; an empty list does not mean there are no jobs elsewhere.'));
     const table=el('table'), head=el('tr');['Rank','Opportunity','Relevance','Posted','Status'].forEach(t=>add(head,el('th','',t)));add(table,add(el('thead'),head));const body=el('tbody');
-    list.forEach(j=>{const score=scoreFor(j), row=el('tr');add(row,el('td','rank-number',`#${positions.get(j.id)}`),add(el('td'),button(j.title,()=>openJob(j.id),'text-button'),el('small','company-line',j.company),el('small','',j.location||'Location not supplied'),external(j.source+' ↗',j.url)),add(el('td'),add(el('span',`score-value ${score.band.toLowerCase()}`),el('strong','',score.score),el('small','',' / 100')),el('small','',score.band+' relevance'),el('small','location-note',score.location_note),j.evaluation?.score!==undefined?el('small','',`AI fit: ${j.evaluation.score}/100`):null),add(el('td'),postedCell(j)),add(el('td'),pill(j.status)));add(body,row);});add(table,body);add(results,add(el('div','table-wrap'),table));
+    list.forEach(j=>{const score=scoreFor(j), row=el('tr');add(row,el('td','rank-number',`#${positions.get(j.id)}`),add(el('td'),button(j.title,()=>openJob(j.id),'text-button'),el('small','company-line',j.company),el('small','',j.location||'Location not supplied'),external(j.source+' ↗',j.source_url||j.url)),add(el('td'),add(el('span',`score-value ${score.band.toLowerCase()}`),el('strong','',score.score),el('small','',' / 100')),el('small','',score.band+' relevance'),el('small','location-note',score.location_note),j.evaluation?.score!==undefined?el('small','',`AI fit: ${j.evaluation.score}/100`):null),add(el('td'),postedCell(j)),add(el('td'),pill(j.status)));add(body,row);});add(table,body);add(results,add(el('div','table-wrap'),table));
   };
   input.addEventListener('input',()=>{search=input.value;update();});status.addEventListener('change',()=>{filter=status.value;update();});order.addEventListener('change',()=>{sort=order.value;update();});scoreFilter.addEventListener('change',()=>{band=scoreFilter.value;update();});scope.addEventListener('change',()=>{selectedSearch=scope.value;search='';band='All scores';filter='All statuses';render();});add(root,add(toolbar,input,scope,scoreFilter,status,order),results);update();
 }
@@ -109,15 +114,16 @@ function historyPage(root) {
 async function startSearch(event) {
   event.preventDefault();if(searchPending||activeSearch)return;searchPending=true;updateSearchStatus();
   try{
-    const response=await fetch('api/search',{method:'POST',headers:{'Content-Type':'application/json','X-CareerPilot-Request':'search'},body:JSON.stringify({role:$('role-input').value,location:$('location-input').value,posted_within:$('posted-input').value,include_unknown_dates:$('unknown-dates').checked})});
-    if(!response.ok)throw new Error(await response.text());const result=await response.json();selectedSearch=result.search_id;activeSearch=result.search_id;search='';filter='All statuses';band='All scores';sort='relevance';go('jobs');await refresh();
+    const primary=$('search-mode').value==='primary', action=primary?'portal-search':'search';
+    const response=await fetch('api/'+action,{method:'POST',headers:{'Content-Type':'application/json','X-CareerPilot-Request':action},body:JSON.stringify({role:$('role-input').value,location:$('location-input').value,posted_within:$('posted-input').value,include_unknown_dates:$('unknown-dates').checked})});
+    if(!response.ok)throw new Error(await response.text());const result=await response.json();selectedSearch=result.search_id;activeSearch=primary?null:result.search_id;search='';filter='All statuses';band='All scores';sort='relevance';go('jobs');await refresh();if(primary)request(portalPrompt(result.search_id));
   }catch(error){$('search-feedback').textContent=error.message||'Search could not start. Check the server and try again.';}
   finally{searchPending=false;updateSearchStatus(false);}
 }
 function updateSearchStatus(updateText=true) {
-  const running=searchPending||Boolean(activeSearch);$('start-search').disabled=running;$('start-search').textContent=running?'Searching…':'Search jobs ↗';
+  const running=searchPending||Boolean(activeSearch);$('start-search').disabled=running;$('start-search').textContent=running?'Preparing search…':$('search-mode').value==='primary'?'Search with AI ↗':'Search supplementary feeds ↗';
   if(!updateText)return;const latest=runs().at(-1);
-  $('search-feedback').textContent=running?'Fetching public sources. Results appear as each source completes; you can browse while this runs.':latest?`${runStatus(latest)} · ${latest.job_ids.length} results saved · ${fullDate(latest.created_at)}. Open Search history for previous lists.`:'';
+  $('search-feedback').textContent=running?'Fetching public sources. Results appear as each source completes; you can browse while this runs.':latest?`${latest.kind==='primary-portals'?'LinkedIn + Indeed · ':''}${runStatus(latest)} · ${latest.job_ids.length} results saved · ${fullDate(latest.created_at)}. Open Search history for previous lists.`:'';
 }
 function profilePage(root) {
   add(root,heading('Your professional story',`Confirmed profile · Revision ${state.profile_revision}`,ask('Update with AI','Help me update my profile from a resume, profile export, or confirmed answers. Show the changes before applying them.')));
@@ -142,6 +148,8 @@ function renderJob() {
   const base=state.jobs[selectedJob]; const snapshot=chosenRun()?.listings?.[selectedJob]; const j=base ? {...base,...snapshot,status:base.status} : null; if(!j){$('detail').close();return;} const root=$('detail-content');root.replaceChildren();const title=el('h2','',j.title);title.id='detail-title';add(root,title,el('p','muted',`${j.company} · ${j.location||'Location not recorded'}`),add(el('div','detail-meta'),pill(j.status),el('small','',`Job ${j.id}`)),add(el('div','link-row'),external('Open posting ↗',j.url),j.checkpoint?external('Open application page ↗',j.checkpoint.page_url):null),el('p','muted',`Source: ${j.source} · Retrieved ${date(j.retrieved_at)}`));
   const callout=el('div',`callout ${['Needs attention','Submission uncertain','Submitting'].includes(j.status)?'warning':''}`);add(callout,el('h3','','Next step'),el('p','',nextAction(j)),j.status==='Needs attention'?el('p','',j.blocker):null,ask('Discuss with AI',`Review job ${j.id} (${j.title} at ${j.company}). Explain its current state and help with the next step. Do not submit or send outreach without my authorization.`,'quiet'));add(root,callout);
   if(j.email_update)section(root,'Latest company response',pill(j.email_update.status),el('p','muted',`Email received ${fullDate(j.email_update.received_at)}`),button('View email evidence',()=>{$('detail').close();go('email');}));
+  if(j.application_route)section(root,'Verified application route',valueNode(j.application_route),external('Original portal posting',j.source_url||j.url));
+  if(j.portal_sources)section(root,'Portal sources',...j.portal_sources.map(c=>external(c.source,c.url)));
   section(root,'Posting & search details',valueNode({posted:fullDate(posted(j)),source_fetched:fullDate(j.discovery?.fetched_at),saved:fullDate(j.created_at)}));
   section(root,'Search relevance',valueNode(scoreFor(j)));
   section(root,'AI fit assessment',j.evaluation?valueNode(j.evaluation):el('p','muted','No assessment saved yet.'));
@@ -164,6 +172,7 @@ async function refresh(){
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.view)));
 document.querySelector('.brand').addEventListener('click',event=>{event.preventDefault();go('overview');});
 $('job-search-form').addEventListener('submit',startSearch);
+$('search-mode').addEventListener('change',()=>updateSearchStatus(false));
 $('refresh').addEventListener('click',refresh);$('close-detail').addEventListener('click',()=>$('detail').close());$('close-prompt').addEventListener('click',()=>$('prompt-dialog').close());
 $('copy-prompt').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('prompt-text').value);$('copy-status').textContent='Copied. Paste it into your AI chat.';}catch{$('prompt-text').focus();$('prompt-text').select();$('copy-status').textContent='Select and copy the request above, then paste it into your AI chat.';}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});setInterval(()=>{if(!document.hidden)refresh();},5000);refresh();
@@ -256,3 +265,5 @@ function emailPage(root) {
     });};select.addEventListener('change',draw);draw();
   if(checks.length){const history=panel('Email check history');checks.slice(0,20).forEach(c=>add(history,add(el('div','row'),add(el('div'),el('strong','',`${fullDate(c.started_at)} · ${c.status}`),el('p','muted',c.scope),el('small','',`${c.account} · ${c.count} new records${c.status==='running'?' · Completion not recorded; ask your agent to reconcile this run.':''}`)))));add(root,history);}
 }
+
+function portalPrompt(id){return `Run primary portal search ${id} using the portal-search workflow. LinkedIn and Indeed are both required. Exclude LinkedIn Easy Apply and all Indeed on-platform applications, including listings that also provide an external link. Verify employer/ATS destination before including a job. Preserve posting dates, rank all qualifying matches including low scores, and report blocked or partial source coverage honestly. Do not submit applications.`;}

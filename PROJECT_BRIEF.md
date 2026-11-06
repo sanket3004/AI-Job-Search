@@ -63,3 +63,8 @@ Encrypted Windows signup/account settings, exact-origin login/signup permission 
 ## Delivered in 0.7
 
 Host-run Gmail review workflow and Email updates dashboard: mailbox scope preferences, optional confirmed-outcome auto-apply, evidence-backed application matching, review/dismiss controls, message deduplication, chronology/conflict safeguards, and check history. This is a portable agent workflow, not a standalone Gmail OAuth client or persistent monitoring service.
+
+
+## Delivered in 0.8
+
+Required LinkedIn/Indeed primary search requests; external employer/ATS route verification; exclusion of Easy Apply, Indeed-hosted, mixed and unknown routes; required per-source coverage; exclusion audit; original portal and destination links; low-score retention and cross-portal employer-URL deduplication. The dashboard defaults to host-agent handoff. Public feeds remain an explicitly chosen supplementary mode. No direct LinkedIn/Indeed scraper is bundled.

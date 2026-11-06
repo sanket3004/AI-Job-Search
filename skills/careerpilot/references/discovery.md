@@ -2,13 +2,15 @@
 
 Use the user's target role, location/work arrangement, experience level and deal-breakers. Preserve the source URL, source name, retrieved date, complete available description, and external job identifier when present.
 
-The [dashboard](dashboard.md) provides a built-in public-feed search with role/location fields, posting-date filters, saved timestamped result lists, and all relevance scores including low matches. Its word/location relevance score is separate from the AI fit assessment below. Review imported search results and source coverage before selecting jobs; do not overwrite saved historical search snapshots when adding an AI evaluation. Preserve source posting dates and distinguish missing dates from retrieval dates.
+## Required primary sources and application type
 
-Prefer official employer career pages, supported job-feed APIs, and authorized connectors. LinkedIn and Indeed are supported as posting sources when retrieval is allowed; accept user-pasted descriptions and links as a fallback. Do not promise complete coverage, an official API you have not verified, or unrestricted scraping. Check current source access terms when implementing or activating a connector. An available third-party scraper is not evidence of platform permission.
+**Search LinkedIn and Indeed for every primary discovery run.** Follow [primary portal searches](portal-search.md) to create a dated list, record source outcomes, and import verified external-application postings. The user's filter excludes LinkedIn Easy Apply and Indeed Apply / Easily apply / Apply with Indeed. A listing offering on-platform application is excluded even if an external link also exists. Unknown application routes remain excluded until inspected.
 
-Relevant platform references:
-- https://www.linkedin.com/help/linkedin/answer/a1340567
-- https://www.indeed.com/legal
+Use allowed host browser/retrieval tools, authorized source connectors, or user-provided posting evidence. If a portal needs login, CAPTCHA or unavailable access, mark that source blocked/partial. Do not replace it silently with employer sites or public feeds, and do not claim complete coverage. Do not invent an official API or use cookie extraction, CAPTCHA bypasses or unapproved scraping services. Current tool/platform access rules still apply.
+
+The dashboard defaults to a **LinkedIn + Indeed** request with role, location and posting-date filters. It saves the request and supplies a host-agent prompt; it does not scrape those portals directly. The existing Remotive/Jobicy/Arbeitnow fetcher is an explicitly selected supplementary search, with separate unverified results. It does not fulfill required primary coverage. Never describe a public-feed-only list as a LinkedIn/Indeed search.
+
+Rank every qualifying external posting, including low matches, and retain source posting dates. Source verification and application-route filtering are independent of fit score. A search's automatic word/location score remains separate from the AI fit assessment below. Do not overwrite historical list snapshots when adding AI evaluations.
 
 Deduplicate before ranking. The helper removes common tracking parameters and fragments for URL identity, but different URLs may represent the same role. Compare employer, title, location and requisition number before adding another posting. Preserve the original URL for navigation. Expired/dead postings should be marked `Expired`; never silently replace their text with an unrelated opening.
 
